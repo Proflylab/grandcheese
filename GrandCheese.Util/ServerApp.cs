@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Util
 {
-    public class Server
+    public class ServerApp
     {
         public static Logger logger = Log.Get();
 
@@ -44,7 +44,7 @@ namespace GrandCheese.Util
             Log.Get().Info("Handled opcodes: {0}", string.Join(", ", serverPackets.Keys.Select(x => "0x" + x.ToString("X2"))));
         }
 
-        public static void StartServer()
+        public static void StartServer(int port)
         {
             logger.Info("Populating packets...");
             PopulatePackets();
@@ -53,10 +53,10 @@ namespace GrandCheese.Util
             try
             {
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                serverSocket.Bind(new IPEndPoint(IPAddress.Any, 9501));
+                serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
                 serverSocket.Listen(5);
                 serverSocket.BeginAccept(AcceptCallback, null);
-                logger.Info("Server has been started on port {0}.", 9501);
+                logger.Info("Server has been started on port {0}.", port);
             }
             catch (Exception ex)
             {

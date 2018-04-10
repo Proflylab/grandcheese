@@ -1,11 +1,13 @@
-﻿using GrandCheese.Util;
+﻿using Dapper;
+using GrandCheese.Util;
+using GrandCheese.Util.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GrandCheese.Packets
+namespace GrandCheese
 {
     class Login
     {
@@ -48,21 +50,179 @@ namespace GrandCheese.Packets
         {
             packet.ReadInt(); // trash data
 
-            int lenID = packet.ReadInt();
-            String ID = packet.ReadString(lenID);
-            int lenPW = packet.ReadInt();
-            String PW = packet.ReadString(lenPW);
+            int lenId = packet.ReadInt();
+            String id = packet.ReadString(lenId);
+            int lenPw = packet.ReadInt();
+            String pw = packet.ReadString(lenPw);
+
+            // TODO: use bcrypt.net
+            using (var db = Database.Get())
+            {
+                var user = db.Query<User>("SELECT * FROM users WHERE username = @name",
+                    new { name = id }).FirstOrDefault();
+
+                if(user != null)
+                {
+                    foreach (var prop in user.GetType().GetProperties())
+                    {
+                        Console.WriteLine("{0}={1}", prop.Name, prop.GetValue(user, null));
+                    }
+                    Console.WriteLine();
+
+                    if (pw == user.Password)
+                    {
+                        Log.Get().Info("{0} logged in.", user.Username);
+                        
+                        var serverList = new Packet((short)LoginOpcodes.ENU_SERVER_LIST_NOT);
+                        serverList.WriteInt(Data.Servers.Count);
+                        int i = 1;
+                        foreach(var server in Data.Servers)
+                        {
+                            foreach (var prop in server.GetType().GetProperties())
+                            {
+                                Console.WriteLine("{0}={1}", prop.Name, prop.GetValue(server, null));
+                            }
+                            Console.WriteLine();
+
+                            serverList.WriteInt(i);
+                            serverList.WriteInt(i);
+                            serverList.WriteInt(server.Name.Length * 2);
+                            serverList.WriteUnicodeString(server.Name);
+                            serverList.WriteInt(server.IP.Length);
+                            serverList.WriteString(server.IP);
+                            serverList.WriteShort((short)server.Port);
+                            serverList.WriteInt(server.OnlineUsers);
+                            serverList.WriteInt(server.MaxUsers);
+                            serverList.WriteInt(server.ProtocolVersion);
+                            serverList.WriteHexString("FF FF FF FF FF FF FF FF");
+                            serverList.WriteInt(server.IP.Length);
+                            serverList.WriteString(server.IP);
+                            serverList.WriteInt(server.Description.Length * 2);
+                            serverList.WriteUnicodeString(server.Description);
+                            serverList.WriteHexString("00 00 00 00");
+                            i++;
+                        }
+
+                        client.SendPacket(serverList);
+
+                        SendChannelNews(client, packet);
+                        SendItemBuyInfo(client, packet);
+                        SendClientOpenContents(client, packet);
+                        SendSocketTableInfo(client, packet);
+                        SendCashbackRatioInfo(client, packet);
+
+                        var success = new Packet((short)LoginOpcodes.ENU_VERIFY_ACCOUNT_ACK);
+                        success.WriteInt(0);
+                        success.WriteInt(lenId * 2);
+                        success.WriteUnicodeString(id);
+                        success.WriteInt(lenPw);
+                        success.WriteString(pw);
+
+                        success.WriteInt(0);
+                        success.WriteHexString("14 0F 03 F7 4C 00 00 00 00 00 00 00 02 5A 5A 00 00 C9 8E 00 00 C9 8E");
+
+                        success.WriteInt(lenId * 2);
+                        success.WriteUnicodeString(id);
+
+                        if (user.Nickname == null)
+                        {
+                            var test = "NONICK";
+                            success.WriteInt(test.Length * 2); // try without
+                            success.WriteUnicodeString(test);
+                        }
+                        else
+                        {
+                            success.WriteInt(user.Nickname.Length * 2);
+                            success.WriteUnicodeString(user.Nickname);
+                        }
+
+                        success.WriteHexString("00 00 00 04 01 00");
+                        
+                        int guild_contribution = 10000;
+                        success.WriteInt(guild_contribution);
+                        success.WriteHexString("00 00 00 00 00 00 00 00");
+
+                        // 길드 자기소개
+                        string guild_whoami = "I am lovemomory.";
+                        success.WriteInt(guild_whoami.Length * 2);
+                        success.WriteUnicodeString(guild_whoami);
+
+                        // ...
+                        success.WriteHexString("07 E1 06 12 00 00 00 07 E1 07 09 00 00 00 00 00 00 00 00 00 04");
+
+                        // 길드 이름
+                        string guild_name = "플레이지씨컴";
+                        success.WriteInt(guild_name.Length * 2);
+                        success.WriteUnicodeString(guild_name);
+
+                        success.WriteHexString("01 00 00 00 01");
+
+                        // 길드마크 아마도..
+                        string guild_mark = "4_1.png";
+                        success.WriteInt(guild_mark.Length * 2);
+                        success.WriteUnicodeString(guild_mark);
+
+                        // 길드 설명
+                        string guild_desc = "공식 플지컴 길드!\nOfficial Play GC.Kom Guild\n";
+                        success.WriteInt(guild_desc.Length * 2);
+                        success.WriteUnicodeString(guild_desc);
+
+                        // ...
+                        success.WriteHexString("02 07 E1 05 15 00 00 00 00 02 E0 C2");
+
+                        // Guild URL
+                        string guild_url = "http://play.gckom.com";
+                        success.WriteInt(guild_url.Length * 2);
+                        success.WriteUnicodeString(guild_url);
+                        
+                        success.WriteInt(0); // ?
+                        success.WriteInt(500000); // Guild EXP
+
+                        success.WriteHexString("00 00 00 C7 00 00 00 00 00 00 00 00 00 00 00 00 03 00 00 03 E8 00 00 00 03");
+
+                        // 길드 설명이 또;;
+                        success.WriteInt(1);
+                        success.WriteInt(guild_desc.Length * 2);
+                        success.WriteUnicodeString(guild_desc);
+
+                        // 길드 공지1
+                        String guild_notice1 = "test1";
+                        String guild_notice2 = "test2";
+                        success.WriteInt(2);
+                        success.WriteInt(guild_notice1.Length * 2);
+                        success.WriteUnicodeString(guild_notice1);
+
+                        success.WriteInt(3);
+                        success.WriteInt(guild_notice2.Length * 2);
+                        success.WriteUnicodeString(guild_notice2);
+
+                        success.WriteInt(0);
+
+                        String guildMarkUrl = "http://play.gckom.com/guildmark/";
+                        success.WriteInt(guildMarkUrl.Length * 2);
+                        success.WriteUnicodeString(guildMarkUrl);
+
+                        success.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 07 00 00 00 00 00 0C 1A C6 8E 02 00 00 00 00 0C 1A C6 8E 08 00 00 00 00 0C 1A C6 8E 09 00 00 00 00 0C 1A C6 8E 10 00 00 00 00 00 00 09 D3 11 00 00 00 00 0C 1A C6 8E 12 00 00 00 00 00 00 02 21 01 BF 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+
+                        
+
+                        client.SendPacket(success, true);
+
+                        return;
+                    }
+                }
+            }
 
             Packet pLoginfail = new Packet((short)LoginOpcodes.ENU_VERIFY_ACCOUNT_ACK);
             pLoginfail.WriteInt(20); // login failure
-            pLoginfail.WriteInt(lenID * 2);
-            pLoginfail.WriteString(ID);
+            pLoginfail.WriteInt(lenId * 2);
+            pLoginfail.WriteString(id);
             pLoginfail.WriteInt(0);
             client.SendPacket(pLoginfail, true);
+
+            Log.Get().Info("Login failed for {0}", id);
         }
         
-        // Unused? When did I write this........?
-        /*
         public static void SendClientOpenContents(Client client, Packet packet)
         {
             Packet p = new Packet((short)LoginOpcodes.ENU_NEW_CLIENT_CONTENTS_OPEN_NOT);
@@ -100,14 +260,13 @@ namespace GrandCheese.Packets
             Packet p = new Packet((short)LoginOpcodes.ENU_ITEM_BUY_INFO_NOT);
 
             p.Write(0);
-
+            
             // TODO: get startid and endid
 
             p.WriteInt(0);
 
             client.SendPacket(p, true);
         }
-        */
 
         [OpcodeAttribute((short)LoginOpcodes.ENU_GUIDE_BOOK_LIST_REQ)]
         public static void SendGuideBookList(Client client, Packet packet)

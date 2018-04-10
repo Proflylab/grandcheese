@@ -47,6 +47,12 @@ namespace GrandCheese.Util
             }
         }
 
+        public void WriteShort(short i)
+        {
+            packet.Add((byte)((i >> 8) & 0xFF));
+            packet.Add((byte)(i & 0xFF));
+        }
+
         public void WriteInt(int i)
         {
             packet.Add((byte)((i >> 24) & 0xFF));

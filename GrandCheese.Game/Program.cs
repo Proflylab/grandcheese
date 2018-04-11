@@ -65,7 +65,7 @@ namespace GrandCheese.Game
                 }
             };
 
-            serverApp.StartServer(Data.Data.Server.Port);
+            serverApp.StartServer(Data.Data.Server.Port, "game");
 
             // This won't work on Mono probably
             while (true) Console.ReadLine();

@@ -14,5 +14,15 @@ namespace GrandCheese.Util
         public OpcodeAttribute(short id) {
             this.id = id;
         }
+
+        public OpcodeAttribute(LoginOpcodes id)
+        {
+            this.id = (short)id;
+        }
+
+        public OpcodeAttribute(GameOpcodes id)
+        {
+            this.id = (short)id;
+        }
     }
 }

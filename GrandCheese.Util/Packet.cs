@@ -95,13 +95,12 @@ namespace GrandCheese.Util
         public void WriteUnicodeString(string s, bool withLen = false)
         {
             // UTF-16 little encoding
-            var b = Encoding.Unicode.GetBytes(s);
-
             if (withLen)
             {
-                WriteInt(b.Length);
+                WriteInt(s.Length * 2);
             }
-            packet.AddRange(b);
+
+            packet.AddRange(Encoding.Unicode.GetBytes(s));
         }
         
         public void WriteHexString(string s)

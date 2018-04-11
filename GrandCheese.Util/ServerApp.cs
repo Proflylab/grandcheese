@@ -72,7 +72,7 @@ namespace GrandCheese.Util
 
             if(type == "game")
             {
-                isGame = true;
+                ProcessSettings.isGame = true;
             }
         }
 
@@ -184,14 +184,6 @@ namespace GrandCheese.Util
             {
                 var c = _clients[current.RemoteEndPoint.ToString()];
 
-                if(isGame)
-                {
-                    if(c.User == null)
-                    {
-                        CreateUserClient(c);
-                    }
-                }
-
                 var p = new Packet(b);
 
                 c.Crypto.DecryptPacket(p);
@@ -203,7 +195,7 @@ namespace GrandCheese.Util
 
                 if (serverPackets.ContainsKey(opcode))
                 {
-                    Log.Get().Info("[Receive] {0} : {1} ({2})", c.Id, (LoginOpcodes)opcode, opcode);
+                    Log.Get().Info("[Receive] {0} : {1} ({2})", c.Id, ProcessSettings.isGame ? ((GameOpcodes)opcode).ToString() : ((LoginOpcodes)opcode).ToString(), opcode);
                     if (CustomInvoke != null)
                     {
                         //serverPackets[opcode].Invoke(c.User, new object[] { c, p });

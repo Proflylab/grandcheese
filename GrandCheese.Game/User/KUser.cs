@@ -34,6 +34,12 @@ namespace GrandCheese.Game.User
             this.userClient = userClient;
         }
 
+        [Opcode(GameOpcodes.HEART_BIT_NOT)]
+        public void OnHeartbeat(Client client, Packet p)
+        {
+            client.LastHeartbeat = DateTime.Now;
+        }
+
         [Opcode((short)GameOpcodes.EVENT_VERIFY_ACCOUNT_REQ)]
         public void VerifyAccount(Client client, Packet packet)
         {
@@ -89,6 +95,8 @@ namespace GrandCheese.Game.User
                 }
             }
 
+            Game.Send_ExpTable(this);
+
             Packet pLogin = new Packet((short)GameOpcodes.EVENT_VERIFY_ACCOUNT_ACK);
             pLogin.WriteUnicodeString(username, true);
             if (nick == null)
@@ -102,7 +110,9 @@ namespace GrandCheese.Game.User
             pLogin.WriteString(password, true);
             pLogin.WriteHexString("00 2E 00 31 00 36 00 31 00 00");
             pLogin.WriteIntLittle(BitConverter.ToInt32((client.Sock.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes(), 0));
-            GuildUserInfo.write_NoGuildUserInfoPacket(pLogin);
+            //GuildUserInfo.write_NoGuildUserInfoPacket(pLogin);
+            // test
+            pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
             pLogin.Write((byte)authLevel); // AuthLevel
             pLogin.WriteInt(20); // age
             pLogin.Write(0); // 개인정보 동의 체크
@@ -119,7 +129,8 @@ namespace GrandCheese.Game.User
 
             // TODO: Server message...?
             // https://github.com/lovemomory/GrandChaseSeasonV/blob/master/GrandChaseSeasonV/src/game/user/GameUser.java#L201
-            pLogin.WriteInt(0);
+            //pLogin.WriteInt(0);
+            pLogin.WriteUnicodeString("呢個係咩嚟...", true);
 
             DungeonUserInfo.write_mapDifficulty(pLogin);
 

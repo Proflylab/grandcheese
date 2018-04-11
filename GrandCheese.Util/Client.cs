@@ -14,6 +14,8 @@ namespace GrandCheese.Util
 
         public Socket Sock { get; set; }
         public Crypto Crypto { get; set; }
+        
+        public object User { get; set; }
 
         /*
          * 0: Center

@@ -63,12 +63,6 @@ namespace GrandCheese
 
                 if(user != null)
                 {
-                    foreach (var prop in user.GetType().GetProperties())
-                    {
-                        Console.WriteLine("{0}={1}", prop.Name, prop.GetValue(user, null));
-                    }
-                    Console.WriteLine();
-
                     if (pw == user.Password)
                     {
                         Log.Get().Info("{0} logged in.", user.Username);
@@ -78,12 +72,6 @@ namespace GrandCheese
                         int i = 1;
                         foreach(var server in Data.Servers)
                         {
-                            foreach (var prop in server.GetType().GetProperties())
-                            {
-                                Console.WriteLine("{0}={1}", prop.Name, prop.GetValue(server, null));
-                            }
-                            Console.WriteLine();
-
                             serverList.WriteInt(i);
                             serverList.WriteInt(i);
                             serverList.WriteInt(server.Name.Length * 2);
@@ -215,7 +203,7 @@ namespace GrandCheese
 
             Packet pLoginfail = new Packet((short)LoginOpcodes.ENU_VERIFY_ACCOUNT_ACK);
             pLoginfail.WriteInt(20); // login failure
-            pLoginfail.WriteInt(lenId * 2);
+            pLoginfail.WriteInt(lenId); // lenId * 2?
             pLoginfail.WriteString(id);
             pLoginfail.WriteInt(0);
             client.SendPacket(pLoginfail, true);

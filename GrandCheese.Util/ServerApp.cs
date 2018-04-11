@@ -12,17 +12,22 @@ namespace GrandCheese.Util
 {
     public class ServerApp
     {
-        public static Logger logger = Log.Get();
+        public Logger logger = Log.Get();
 
-        public static Socket serverSocket;
-        public static readonly byte[] buffer = new byte[2048];
+        public Socket serverSocket;
+        public readonly byte[] buffer = new byte[2048];
 
-        public static Dictionary<string, Client> _clients = new Dictionary<string, Client>();
-        public static Dictionary<short, MethodBase> serverPackets = new Dictionary<short, MethodBase>();
+        public bool isGame = false;
+        public Dictionary<string, Client> _clients = new Dictionary<string, Client>();
+        public Dictionary<short, MethodBase> serverPackets = new Dictionary<short, MethodBase>();
 
-        public static object Reader = null;
+        public object Reader = null;
 
-        public static void PopulatePackets()
+        public Action<ServerApp, Client, Packet, short> CustomInvoke = null;
+        public Action<string> OnDisconnect = null;
+        public Action<Client> CreateUserClient = null;
+
+        public void PopulatePackets()
         {
             var methods = Assembly.GetEntryAssembly().GetTypes()
                       .SelectMany(t => t.GetMethods())
@@ -44,7 +49,7 @@ namespace GrandCheese.Util
             Log.Get().Info("Handled opcodes: {0}", string.Join(", ", serverPackets.Keys.Select(x => "0x" + x.ToString("X2"))));
         }
 
-        public static void StartServer(int port)
+        public void StartServer(int port, string type = "center")
         {
             logger.Info("Populating packets...");
             PopulatePackets();
@@ -64,9 +69,14 @@ namespace GrandCheese.Util
                 Console.ReadKey();
                 Environment.Exit(1); // Exit with error code 1 because error
             }
+
+            if(type == "game")
+            {
+                isGame = true;
+            }
         }
 
-        public static void AcceptCallback(IAsyncResult AR)
+        public void AcceptCallback(IAsyncResult AR)
         {
             Socket socket;
 
@@ -99,7 +109,7 @@ namespace GrandCheese.Util
             serverSocket.BeginAccept(AcceptCallback, null);
         }
 
-        private static void ReceiveCallback(IAsyncResult AR)
+        private void ReceiveCallback(IAsyncResult AR)
         {
             Socket current = (Socket)AR.AsyncState;
 
@@ -110,7 +120,8 @@ namespace GrandCheese.Util
             }
             catch (SocketException)
             {
-                logger.Warn("Client {0} forcefully disconnected.", current.RemoteEndPoint.ToString());
+                logger.Warn("Client {0} disconnected.", current.RemoteEndPoint.ToString());
+                OnDisconnect?.Invoke(current.RemoteEndPoint.ToString());
                 _clients.Remove(current.RemoteEndPoint.ToString());
                 current.Close();
                 return;
@@ -153,32 +164,7 @@ namespace GrandCheese.Util
 
                 foreach (byte[] b in packets)
                 {
-                    try
-                    {
-                        var c = _clients[current.RemoteEndPoint.ToString()];
-                        var p = new Packet(b);
-
-                        c.Crypto.DecryptPacket(p);
-
-                        short opcode = p.ReadShort();
-                        int length = p.ReadInt();
-                        int isCompressed = p.ReadByte();
-                        if (isCompressed == 1) p.ReadInt();
-                        
-                        if(serverPackets.ContainsKey(opcode))
-                        {
-                            Log.Get().Info("[Receive] {0} : {1} ({2})", c.Id, (LoginOpcodes)opcode, opcode);
-                            serverPackets[opcode].Invoke(null, new object[] { c, p });
-                        }
-                        else
-                        {
-                            Log.Get().Warn("Unknown packet received. Opcode: {0} Length: {1}", opcode, length);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, "Unable to handle packet. Perhaps a malformed packet was sent?");
-                    }
+                    ProcessPacket(b, current);
                 }
 
                 packets = null;
@@ -190,6 +176,53 @@ namespace GrandCheese.Util
 
             current.BeginReceive(buffer, 0, 2048, SocketFlags.None, ReceiveCallback, current);
             return;
+        }
+
+        public void ProcessPacket(byte[] b, Socket current)
+        {
+            try
+            {
+                var c = _clients[current.RemoteEndPoint.ToString()];
+
+                if(isGame)
+                {
+                    if(c.User == null)
+                    {
+                        CreateUserClient(c);
+                    }
+                }
+
+                var p = new Packet(b);
+
+                c.Crypto.DecryptPacket(p);
+
+                short opcode = p.ReadShort();
+                int length = p.ReadInt();
+                int isCompressed = p.ReadByte();
+                if (isCompressed == 1) p.ReadInt();
+
+                if (serverPackets.ContainsKey(opcode))
+                {
+                    Log.Get().Info("[Receive] {0} : {1} ({2})", c.Id, (LoginOpcodes)opcode, opcode);
+                    if (CustomInvoke != null)
+                    {
+                        //serverPackets[opcode].Invoke(c.User, new object[] { c, p });
+                        CustomInvoke(this, c, p, opcode);
+                    }
+                    else
+                    {
+                        serverPackets[opcode].Invoke(null, new object[] { c, p });
+                    }
+                }
+                else
+                {
+                    Log.Get().Warn("Unknown packet received. Opcode: {0} Length: {1}", opcode, length);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Unable to handle packet. Perhaps a malformed packet was sent?");
+            }
         }
     }
 }

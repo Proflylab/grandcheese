@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Util
 {
-    enum GameOpcodes : short
+    public enum GameOpcodes : short
     {
         HEART_BIT_NOT = 0,
         EVENT_ACCEPT_CONNECTION_NOT = 1,

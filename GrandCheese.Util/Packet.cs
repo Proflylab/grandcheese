@@ -61,15 +61,47 @@ namespace GrandCheese.Util
             packet.Add((byte)(i & 0xFF));
         }
 
-        public void WriteString(string s)
+        public void WriteIntLittle(int i)
         {
+            packet.Add((byte)(i & 0xFF));
+            packet.Add((byte)((i >> 8) & 0xFF));
+            packet.Add((byte)((i >> 16) & 0xFF));
+            packet.Add((byte)((i >> 24) & 0xFF));
+        }
+
+        public void WriteLong(long i)
+        {
+            packet.Add((byte)((i >> 56) & 0xFF));
+            packet.Add((byte)((i >> 48) & 0xFF));
+            packet.Add((byte)((i >> 40) & 0xFF));
+            packet.Add((byte)((i >> 32) & 0xFF));
+
+            packet.Add((byte)((i >> 24) & 0xFF));
+            packet.Add((byte)((i >> 16) & 0xFF));
+            packet.Add((byte)((i >> 8) & 0xFF));
+            packet.Add((byte)(i & 0xFF));
+        }
+
+        public void WriteString(string s, bool withLen = false)
+        {
+            if(withLen)
+            {
+                WriteInt(s.Length);
+            }
+
             packet.AddRange(Encoding.ASCII.GetBytes(s));
         }
 
-        public void WriteUnicodeString(string s)
+        public void WriteUnicodeString(string s, bool withLen = false)
         {
             // UTF-16 little encoding
-            packet.AddRange(Encoding.Unicode.GetBytes(s));
+            var b = Encoding.Unicode.GetBytes(s);
+
+            if (withLen)
+            {
+                WriteInt(b.Length);
+            }
+            packet.AddRange(b);
         }
         
         public void WriteHexString(string s)
@@ -94,6 +126,11 @@ namespace GrandCheese.Util
             }
 
             WriteHexString("00 00 00");
+        }
+
+        public void WriteBool(bool b)
+        {
+            packet.Add(b ? (byte)1 : (byte)0);
         }
 
         // Read
@@ -123,6 +160,12 @@ namespace GrandCheese.Util
             return (Read() << 24) + (Read() << 16) + (Read() << 8) + Read();
         }
 
+        public long ReadLong()
+        {
+            return (Read() << 56) + (Read() << 48) + (Read() << 40) + (Read() << 32) +
+                    (Read() << 24) + (Read() << 16) + (Read() << 8) + Read();
+        }
+
         public string ReadString(int n)
         {
             byte[] ret = new byte[n];
@@ -135,6 +178,11 @@ namespace GrandCheese.Util
             return Encoding.ASCII.GetString(ret);
         }
 
+        public string ReadString()
+        {
+            return ReadString(ReadInt());
+        }
+
         public string ReadUnicodeString(int n)
         {
             byte[] ret = new byte[n];
@@ -145,6 +193,16 @@ namespace GrandCheese.Util
             }
 
             return Encoding.Unicode.GetString(ret);
+        }
+
+        public string ReadUnicodeString()
+        {
+            return ReadUnicodeString(ReadInt());
+        }
+
+        public bool ReadBool()
+        {
+            return Read() == 1;
         }
     }
 }

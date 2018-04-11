@@ -13,7 +13,7 @@ using Dapper;
 
 namespace GrandCheese
 {
-    class Program : ServerApp
+    class Program
     {
         static void Main(string[] args)
         {
@@ -37,7 +37,8 @@ namespace GrandCheese
             }
             Log.Get().Info("Loaded {0} server{1}.", Data.Servers.Count, Data.Servers.Count == 1 ? "" : "s");
 
-            StartServer(9501);
+            var serverApp = new ServerApp();
+            serverApp.StartServer(9501);
 
             // This won't work on Mono probably
             while (true) Console.ReadLine();

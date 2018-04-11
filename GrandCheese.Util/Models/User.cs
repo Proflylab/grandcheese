@@ -26,5 +26,15 @@ namespace GrandCheese.Util.Models
         
         //[Column("gp")]
         public int GP { get; set; }
+
+        public int VP { get; set; }
+
+        public int AuthLevel { get; set; }
+        
+        public int InventoryCapacity { get; set; }
+
+        public int BonusPoints { get; set; }
+
+        public int SpecialBonusPoints { get; set; }
     }
 }

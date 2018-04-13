@@ -80,7 +80,9 @@ namespace GrandCheese.Util
 
         public byte[] AssemblePacket(Packet p, byte[] prefix, int packetno, bool compress)
         {
-            Log.Get().Info("[Send] {0} : {1} ({2})", client.Id, (LoginOpcodes)p.opcode, p.opcode);
+            Log.Get().Info("[Send] {0} : {1} ({2})", client.Id, ProcessSettings.isGame ? ((GameOpcodes)p.opcode).ToString() : ((LoginOpcodes)p.opcode).ToString(), p.opcode);
+
+            Log.Get().Trace("[Send Trace] Packet: {0}", Util.ConvertBytesToHexString(p.packet.ToArray()));
 
             var iv = GenerateIV();
             

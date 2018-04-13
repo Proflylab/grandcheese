@@ -107,16 +107,18 @@ namespace GrandCheese
                         success.WriteString(pw);
 
                         success.WriteInt(0);
-                        success.WriteHexString("14 0F 03 F7 4C 00 00 00 00 00 00 00 02 5A 5A 00 00 C9 8E 00 00 C9 8E");
+                        success.WriteHexString("14 0F 03 F7 4C 00 00 00 00");
 
+                        success.WriteString("US", true); // Country code
+
+                        success.WriteHexString("00 00 C9 8E 00 00 C9 8E");
+                        
                         success.WriteInt(lenId * 2);
                         success.WriteUnicodeString(id);
 
                         if (user.Nickname == null)
                         {
-                            var test = "NONICK";
-                            success.WriteInt(test.Length * 2); // try without
-                            success.WriteUnicodeString(test);
+                            success.WriteInt(0); // try without
                         }
                         else
                         {

@@ -95,9 +95,10 @@ namespace GrandCheese.Game.User
                 }
             }
 
-            Game.Send_ExpTable(this);
+            Game.Send_ExpTable(this); // 04E1 (1249d)
 
             Packet pLogin = new Packet((short)GameOpcodes.EVENT_VERIFY_ACCOUNT_ACK);
+
             pLogin.WriteUnicodeString(username, true);
             if (nick == null)
             {
@@ -108,40 +109,81 @@ namespace GrandCheese.Game.User
             }
             pLogin.WriteInt(0); // ucOK
             pLogin.WriteString(password, true);
-            pLogin.WriteHexString("00 2E 00 31 00 36 00 31 00 00");
-            pLogin.WriteIntLittle(BitConverter.ToInt32((client.Sock.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes(), 0));
-            //GuildUserInfo.write_NoGuildUserInfoPacket(pLogin);
+
             // test
+            //pLogin.WriteHexString("00 2E 00 31 00 36 00 31 00 00");
+            pLogin.WriteHexString("00 30 00 2E 00 2E 00 34 00 00");
+
+            pLogin.WriteIntLittle(BitConverter.ToInt32((client.Sock.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes(), 0));
+            
+            //GuildUserInfo.write_NoGuildUserInfoPacket(pLogin);
             pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
-            pLogin.Write((byte)authLevel); // AuthLevel
-            pLogin.WriteInt(20); // age
+
+            // test
+            // OK! matches madness kinda
+            pLogin.Write((byte)authLevel); // AuthLevel - 0xFA in test packet (modified)
+            pLogin.WriteInt(20); // age, 0x14
             pLogin.Write(0); // 개인정보 동의 체크
             pLogin.Write(0); // PC방
 
             // TODO: Characters
             //https://github.com/lovemomory/GrandChaseSeasonV/blob/master/GrandChaseSeasonV/src/game/user/GameUser.java#L189
             pLogin.WriteInt(0);
+            /*pLogin.WriteInt(1); // OK
+
+            pLogin.WriteInt(0); // Index of character
+            pLogin.Write(1); // m_cCharType
+            pLogin.WriteUnicodeString("DIU", true); // m_strCharName
+            pLogin.Write(1); // m_cPromotion
+            pLogin.Write(1); // m_cCurrentPromotion
+            pLogin.WriteLong(0); // m_biInitExp
+            pLogin.WriteInt(0); // m_iInitWin
+            pLogin.WriteInt(0); // m_iInitLose
+            pLogin.WriteInt(0); // m_iWin
+            pLogin.WriteInt(0); // m_iLose
+            pLogin.WriteLong(0); // m_biExp
+            pLogin.WriteInt(40); // m_dwLevel
+
+            pLogin.WriteInt(0); // m_vecEquipItems.size()
+
+            pLogin.WriteInt(1); // SkillPoint
+            pLogin.WriteInt(0); // MaxSkillPoint
+
+            pLogin.WriteInt(1); // SkillTreePoint
+            pLogin.WriteInt(0); // MaxSkillTreePoint
+
+            pLogin.Write(0); // 오류나면 바이트 말고 인트로..
+            */
+
 
             pLogin.WriteShort(9401); // 포트긴 한데 udp겠지..? 9401 in Madness
             pLogin.WriteInt(userId);
             pLogin.WriteUnicodeString(Data.Data.Server.Name, true);
-            pLogin.WriteInt(3); // New user, initial connection, reconnection? 03 in Madness
+
+            // int 3 在lovemomory的代碼
+            //pLogin.WriteInt(3); // New user, initial connection, reconnection? 03 in Madness
+            // int 0 在madness中
+            pLogin.WriteInt(0);
+
 
             // TODO: Server message...?
             // https://github.com/lovemomory/GrandChaseSeasonV/blob/master/GrandChaseSeasonV/src/game/user/GameUser.java#L201
-            //pLogin.WriteInt(0);
-            pLogin.WriteUnicodeString("呢個係咩嚟...", true);
+            pLogin.WriteInt(0);
+            //pLogin.WriteUnicodeString("呢個係咩嚟...", true);
 
-            DungeonUserInfo.write_mapDifficulty(pLogin);
+            //DungeonUserInfo.write_mapDifficulty(pLogin);
+            pLogin.WriteHexString("00 00 00 55 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 13 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 14 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 15 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 16 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 17 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 18 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 19 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 24 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 27 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 28 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 29 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 30 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 31 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 33 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 34 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 35 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 36 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 37 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 38 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 39 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 43 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 44 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 45 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 46 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 47 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 49 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 4A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 4B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 4C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 4E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 4F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 50 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 51 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 53 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 54 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 55 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 56 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 57 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 58 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 59 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 62 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 63 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 65 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 66 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 67 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 6A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 40 18 00 00 00 00 00 00 00 00 00 00 29 E1 E0 76 74 08 74 80");
+            
+            // ?
+            //pLogin.WriteHexString("00 18 00 00 00 00 00 01 00 12 9D FA 00 00 00 01 00 98 98 0F 00 00 00 00 59 6E 2F DB 59 6C DE 5B 00 00 00 00 00 00 00 00 29 E1 56 52 22 00 74 17");
+            pLogin.WriteHexString("40 18 00 00 00 00 00 00 00 00 00 00 29 E1 E0 76 74 08 74 80");
 
-            pLogin.WriteHexString("00 18 00 00 00 00 00 01 00 12 9D FA 00 00 00 01 00 98 98 0F 00 00 00 00 59 6E 2F DB 59 6C DE 5B 00 00 00 00 00 00 00 00 29 E1 56 52 22 00 74 17");
-
-            // 메시지서버
-            pLogin.WriteInt(0); // Num msg servers
-            /*
+            // MsgServer
+            pLogin.WriteInt(1); // Num msg servers
+            
             pLogin.WriteInt(0); // server uid
             pLogin.WriteInt(0); // server part
-            pLogin.WriteUnicodeString("MSG1", true);
+            pLogin.WriteUnicodeString("MsgServer_GS1", true);
             pLogin.WriteString("127.0.0.1", true);
             pLogin.WriteShort(4444);
             pLogin.WriteInt(0); // user num
@@ -150,13 +192,21 @@ namespace GrandCheese.Game.User
             pLogin.WriteInt(-1); // pair-left 레벨범위
             pLogin.WriteInt(-1); // pair-right 레벨범위
             pLogin.WriteString(Data.Data.Server.IP, true); // 전달용
-            pLogin.WriteUnicodeString(Data.Data.Server.Description, true); // 서버 설명
-            pLogin.WriteInt(0); // max level
-            */
+            
+            // modified for test:
+            //pLogin.WriteUnicodeString("", true); // 서버 설명
+            pLogin.WriteInt(0); // No description???
 
-            pLogin.Write(3); // m_cRecommendUser
-            pLogin.WriteInt(0x57F173AC); // m_tFirstLoginTime
-            pLogin.WriteInt(0x57F173AC); // m_tLastLoginTime
+            pLogin.WriteInt(0); // max level
+            
+
+            pLogin.Write(3); // m_cRecommendUser, 0x3
+            
+            //pLogin.WriteInt(0x57F173AC); // m_tFirstLoginTime
+            //pLogin.WriteInt(0x57F173AC); // m_tLastLoginTime
+            pLogin.WriteHexString("57 F1 73 AC"); // m_tFirstLoginTime
+            pLogin.WriteHexString("57 F1 73 AC");
+
             pLogin.WriteInt(0); // m_nPubEvent
 
             // Pets (Unimplemented)
@@ -173,12 +223,24 @@ namespace GrandCheese.Game.User
             pLogin.WriteInt(0); // m_kPremiumInfo
             pLogin.Write(0); // m_bIsRecommendEvent
             pLogin.Write(1); // m_bCheckChanneling
-            pLogin.WriteInt(1); // m_dwChannelType
-            pLogin.WriteInt(0x61D0B2C0); // m_tVirtualEnableDate
+
+            // modified for test:
+            // pLogin.WriteInt(1); // m_dwChannelType
+            // TODO: why 1 in lovemomory's source, but 0 in madness
+            pLogin.WriteInt(0);
+
+            // test: maybe WriteInt would reverse 0xC0B2D061......
+            //pLogin.WriteInt(0x61D0B2C0);
+            pLogin.WriteHexString("61 D0 42 40"); // m_tVirtualEnableDate
+
             pLogin.Write(0); // m_cUserBenfitType
-            pLogin.WriteHexString("30 FF E9 7D 53 0B A0 0A 00 5A 0D 2A 00 00 00 00 00 74 39 5F 5A 0D 2A 3A");
+            
+            //pLogin.WriteHexString("30 FF E9 7D 53 0B A0 0A 00 5A 0D 2A 00 00 00 00 00 74 39 5F 5A 0D 2A 3A");
+            pLogin.WriteHexString("88 FF E9 7D 9C 02 5A 13 00 5A D0 1F 00 00 00 00 00 74 A2 5F 5A CE A1 80"); // from madness
+
             pLogin.WriteInt(0); // ?
             pLogin.WriteInt(20); // Character count
+
             for (int i = 0; i < 20; i++)
             {
                 pLogin.WriteInt(i);
@@ -187,11 +249,14 @@ namespace GrandCheese.Game.User
                 pLogin.WriteInt(0);
                 pLogin.WriteShort((short)0);
             }
-            pLogin.WriteHexString("00 00 00 07 00 00 00 68 00 16 5D 64 00 00 00 00 00 00 00 69 00 03 A1 EC 00 00 00 00 00 00 01 36 00 16 05 4E 00 00 00 01 00 00 01 37 00 12 C8 FC 00 00 00 01 00 00 01 38 00 13 AF A6 00 00 00 01 00 00 01 39 00 02 DF 6E 00 00 00 01 00 00 01 3A 00 08 5A D4 00 00 00 01 00 00 00 00 11 00 00");
+
+            // ?
+            //pLogin.WriteHexString("00 00 00 07 00 00 00 68 00 16 5D 64 00 00 00 00 00 00 00 69 00 03 A1 EC 00 00 00 00 00 00 01 36 00 16 05 4E 00 00 00 01 00 00 01 37 00 12 C8 FC 00 00 00 01 00 00 01 38 00 13 AF A6 00 00 00 01 00 00 01 39 00 02 DF 6E 00 00 00 01 00 00 01 3A 00 08 5A D4 00 00 00 01 00 00 00 00 11 00 00");
+            pLogin.WriteHexString("00 00 00 07 00 00 00 72 00 17 F5 AC 00 00 00 00 00 00 00 73 00 10 8A 74 00 00 00 00 00 00 01 4F 00 05 B4 C8 00 00 00 01 00 00 01 50 00 18 2D B0 00 00 00 01 00 00 01 51 00 05 2E 2C 00 00 00 01 00 00 01 52 00 07 0C 88 00 00 00 01 00 00 01 53 00 04 F1 3C 00 00 00 01 00 00 00 04 FF 01 00");
             
             client.SendPacket(pLogin, true);
             
-            Game.Send_ServerTime(this);
+            Game.Send_ServerTime(this); // 01A0 (416d)
             Game.Send_PetVestedItem(this);
             Game.Send_GraduateCharInfo(this);
             Game.Send_JumpingCharInfo(this);

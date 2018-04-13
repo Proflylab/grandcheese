@@ -61,7 +61,8 @@ namespace GrandCheese.Game
         public static void Send_GraduateCharInfo(KUser u)
         {
             Packet p = new Packet((short)GameOpcodes.EVENT_GRADUATE_CHARACTER_USER_INFO_NOT);
-            p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 11 00 00 00 12 00 00 00 00");
+            //p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 11 00 00 00 12 00 00 00 00");
+            p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
             u.userClient.Client.SendPacket(p, false);
         }
 
@@ -75,7 +76,8 @@ namespace GrandCheese.Game
         public static void Send_SlotInfo(KUser u)
         {
             Packet p = new Packet((short)GameOpcodes.EVENT_SLOT_INFO_NOT);
-            p.WriteHexString("00 00 00 02 00 00 00 00 00 00 E5 6A 00 00 00 01 31 7F 24 36 00 00 00 00 01 00 00 E5 88 00 00 00 01 31 7F 24 37 00 00 00 00");
+            //p.WriteHexString("00 00 00 02 00 00 00 00 00 00 E5 6A 00 00 00 01 31 7F 24 36 00 00 00 00 01 00 00 E5 88 00 00 00 01 31 7F 24 37 00 00 00 00");
+            p.WriteHexString("00 00 00 00 00 00 00 00");
             u.userClient.Client.SendPacket(p, false);
         }
 

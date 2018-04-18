@@ -239,8 +239,18 @@ namespace GrandCheese.Util
                 else if(arg.GetType() == typeof(GCWideString))
                 {
                     WriteUnicodeString((GCWideString)arg.ToString(), true);
-                } else
+                }
+                else if(arg.GetType() == typeof(GCPair))
                 {
+                    // TODO: Look into tuples or something idk
+
+                    var pair = (GCPair)arg;
+                    Put(pair.first, pair.second);
+                }
+                else
+                {
+                    // TODO: Fallback to an Attribute
+
                     throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().FullName);
                 }
             }

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using GrandCheese.Util;
+using GrandCheese.Util.Extensions;
 using GrandCheese.Util.Models;
 using GrandCheese.Util.Types;
 using System;
@@ -76,16 +77,15 @@ namespace GrandCheese
                             serverList.Put(
                                 i,
                                 i,
-                                (GCWideString)server.Name,
+                                server.Name.ToWideString(),
                                 server.IP,
                                 (short)server.Port,
                                 server.OnlineUsers,
                                 server.MaxUsers,
                                 server.ProtocolVersion,
-                                -1, // RangeMinLevel
-                                -1, // RangeMaxLevel
+                                new GCPair(-1, -1), // RangeMinMaxLevel
                                 server.IP,
-                                (GCWideString)server.Description,
+                                server.Description.ToWideString(),
                                 0 // MaxLevel
                             );
 
@@ -101,21 +101,21 @@ namespace GrandCheese
                         SendCashbackRatioInfo(client, packet);
 
                         var success = new Packet((short)LoginOpcodes.ENU_VERIFY_ACCOUNT_ACK);
-                        success.WriteInt(0);
-                        success.WriteInt(lenId * 2);
-                        success.WriteUnicodeString(id);
-                        success.WriteInt(lenPw);
-                        success.WriteString(pw);
 
-                        success.WriteInt(0);
+                        success.Put(
+                            0,
+                            id.ToWideString(),
+                            pw,
+                            0
+                        );
+
                         success.WriteHexString("14 0F 03 F7 4C 00 00 00 00");
 
                         success.WriteString("US", true); // Country code
 
                         success.WriteHexString("00 00 C9 8E 00 00 C9 8E");
                         
-                        success.WriteInt(lenId * 2);
-                        success.WriteUnicodeString(id);
+                        success.WriteUnicodeString(id, true);
 
                         if (user.Nickname == null)
                         {
@@ -194,9 +194,7 @@ namespace GrandCheese
                         success.WriteUnicodeString(guildMarkUrl);
 
                         success.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 07 00 00 00 00 00 0C 1A C6 8E 02 00 00 00 00 0C 1A C6 8E 08 00 00 00 00 0C 1A C6 8E 09 00 00 00 00 0C 1A C6 8E 10 00 00 00 00 00 00 09 D3 11 00 00 00 00 0C 1A C6 8E 12 00 00 00 00 00 00 02 21 01 BF 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
-
                         
-
                         client.SendPacket(success, true);
 
                         return;
@@ -205,10 +203,13 @@ namespace GrandCheese
             }
 
             Packet pLoginfail = new Packet((short)LoginOpcodes.ENU_VERIFY_ACCOUNT_ACK);
-            pLoginfail.WriteInt(20); // login failure
-            pLoginfail.WriteInt(lenId); // lenId * 2?
-            pLoginfail.WriteString(id);
-            pLoginfail.WriteInt(0);
+
+            pLoginfail.Put(
+                20, // login failure
+                id.ToWideString(), // user ID
+                0 // what's this
+            );
+
             client.SendPacket(pLoginfail, true);
 
             Log.Get().Info("Login failed for {0}", id);

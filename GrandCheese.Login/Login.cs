@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using GrandCheese.Util;
 using GrandCheese.Util.Models;
+using GrandCheese.Util.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,22 +73,22 @@ namespace GrandCheese
                         int i = 1;
                         foreach(var server in Data.Servers)
                         {
-                            serverList.WriteInt(i);
-                            serverList.WriteInt(i);
-                            serverList.WriteInt(server.Name.Length * 2);
-                            serverList.WriteUnicodeString(server.Name);
-                            serverList.WriteInt(server.IP.Length);
-                            serverList.WriteString(server.IP);
-                            serverList.WriteShort((short)server.Port);
-                            serverList.WriteInt(server.OnlineUsers);
-                            serverList.WriteInt(server.MaxUsers);
-                            serverList.WriteInt(server.ProtocolVersion);
-                            serverList.WriteHexString("FF FF FF FF FF FF FF FF");
-                            serverList.WriteInt(server.IP.Length);
-                            serverList.WriteString(server.IP);
-                            serverList.WriteInt(server.Description.Length * 2);
-                            serverList.WriteUnicodeString(server.Description);
-                            serverList.WriteHexString("00 00 00 00");
+                            serverList.Put(
+                                i,
+                                i,
+                                (GCWideString)server.Name,
+                                server.IP,
+                                (short)server.Port,
+                                server.OnlineUsers,
+                                server.MaxUsers,
+                                server.ProtocolVersion,
+                                -1, // RangeMinLevel
+                                -1, // RangeMaxLevel
+                                server.IP,
+                                (GCWideString)server.Description,
+                                0 // MaxLevel
+                            );
+
                             i++;
                         }
 

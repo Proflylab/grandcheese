@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GrandCheese.Util.Exceptions;
+using GrandCheese.Util.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -95,12 +97,14 @@ namespace GrandCheese.Util
         public void WriteUnicodeString(string s, bool withLen = false)
         {
             // UTF-16 little encoding
+            var bytes = Encoding.Unicode.GetBytes(s);
+
             if (withLen)
             {
-                WriteInt(s.Length * 2);
+                WriteInt(bytes.Length);
             }
 
-            packet.AddRange(Encoding.Unicode.GetBytes(s));
+            packet.AddRange(bytes);
         }
         
         public void WriteHexString(string s)
@@ -202,6 +206,44 @@ namespace GrandCheese.Util
         public bool ReadBool()
         {
             return Read() == 1;
+        }
+
+        public void Put(params object[] args)
+        {
+            foreach(var arg in args)
+            {
+                if(arg.GetType() == typeof(int))
+                {
+                    WriteInt((int)arg);
+                }
+                else if(arg.GetType() == typeof(string))
+                {
+                    WriteString((string)arg, true);
+                }
+                else if (arg.GetType() == typeof(byte))
+                {
+                    Write((byte)arg);
+                }
+                else if (arg.GetType() == typeof(long))
+                {
+                    WriteLong((long)arg);
+                }
+                else if (arg.GetType() == typeof(short) || arg.GetType() == typeof(ushort))
+                {
+                    WriteShort((short)arg);
+                }
+                else if (arg.GetType() == typeof(bool))
+                {
+                    Write((byte)((bool)arg ? 0x01 : 0x060));
+                }
+                else if(arg.GetType() == typeof(GCWideString))
+                {
+                    WriteUnicodeString((GCWideString)arg.ToString(), true);
+                } else
+                {
+                    throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().FullName);
+                }
+            }
         }
     }
 }

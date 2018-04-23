@@ -6,7 +6,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using zlib;
 
 namespace GrandCheese.Util
 {
@@ -78,30 +77,7 @@ namespace GrandCheese.Util
 
             client.Sock.Send(packet);
         }
-
-        private static void CopyStream(Stream input, Stream output)
-        {
-            byte[] buffer = new byte[(int)input.Length + 10240];
-            int len;
-            while ((len = input.Read(buffer, 0, (int)input.Length + 10240)) > 0)
-            {
-                output.Write(buffer, 0, len);
-            }
-            output.Flush();
-        }
-
-        private static byte[] CompressData(byte[] inData)
-        {
-            using (MemoryStream outMemoryStream = new MemoryStream())
-            using (ZOutputStream outZStream = new ZOutputStream(outMemoryStream, zlibConst.Z_BEST_SPEED))
-            using (Stream inMemoryStream = new MemoryStream(inData))
-            {
-                CopyStream(inMemoryStream, outZStream);
-                outZStream.finish();
-                return outMemoryStream.ToArray();
-            }
-        }
-
+        
         public byte[] AssemblePacket(Packet p, byte[] prefix, int packetno, bool compress)
         {
             Log.Get().Info("[Send] {0} : {1} ({2})", client.Id, ProcessSettings.isGame ? ((GameOpcodes)p.opcode).ToString() : ((LoginOpcodes)p.opcode).ToString(), p.opcode);
@@ -116,8 +92,18 @@ namespace GrandCheese.Util
 
             if(compress)
             {
-                byte[] temp = CompressData(p.packet.ToArray());
+                byte[] temp;
 
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (ZlibStream compressor = new ZlibStream(ms, CompressionMode.Compress, CompressionLevel.Level1))
+                    {
+                        compressor.Write(p.packet.ToArray(), 0, p.packet.Count);
+                    }
+
+                    temp = ms.ToArray();
+                }
+                
                 packetwh.AddRange(Util.ShortToByteArrayBig((short)p.opcode)); // ID
                 packetwh.AddRange(Util.IntToByteArrayBig(temp.Length + 4)); // Size - CHECK
 

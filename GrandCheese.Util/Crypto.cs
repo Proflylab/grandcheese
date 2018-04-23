@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using zlib;
 
 namespace GrandCheese.Util
 {
@@ -78,6 +79,29 @@ namespace GrandCheese.Util
             client.Sock.Send(packet);
         }
 
+        private static void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[(int)input.Length + 10240];
+            int len;
+            while ((len = input.Read(buffer, 0, (int)input.Length + 10240)) > 0)
+            {
+                output.Write(buffer, 0, len);
+            }
+            output.Flush();
+        }
+
+        private static byte[] CompressData(byte[] inData)
+        {
+            using (MemoryStream outMemoryStream = new MemoryStream())
+            using (ZOutputStream outZStream = new ZOutputStream(outMemoryStream, zlibConst.Z_BEST_SPEED))
+            using (Stream inMemoryStream = new MemoryStream(inData))
+            {
+                CopyStream(inMemoryStream, outZStream);
+                outZStream.finish();
+                return outMemoryStream.ToArray();
+            }
+        }
+
         public byte[] AssemblePacket(Packet p, byte[] prefix, int packetno, bool compress)
         {
             Log.Get().Info("[Send] {0} : {1} ({2})", client.Id, ProcessSettings.isGame ? ((GameOpcodes)p.opcode).ToString() : ((LoginOpcodes)p.opcode).ToString(), p.opcode);
@@ -98,27 +122,20 @@ namespace GrandCheese.Util
             }
 
             List<byte> packetwh = new List<byte>();
-            packetwh.AddRange(Util.ShortToByteArrayBig((short)p.opcode)); // ID
-            packetwh.AddRange(Util.IntToByteArrayBig(p.packet.Count)); // Size - CHECK
 
             if(compress)
             {
+                byte[] temp = CompressData(p.packet.ToArray());
+
+                packetwh.AddRange(Util.ShortToByteArrayBig((short)p.opcode)); // ID
+                packetwh.AddRange(Util.IntToByteArrayBig(temp.Length + 4)); // Size - CHECK
+
                 packetwh.Add(0x01);
 
-                byte[] temp;
-
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    using (ZlibStream compressor = new ZlibStream(ms, CompressionMode.Compress, CompressionLevel.Level1))
-                    {
-                        compressor.Write(p.packet.ToArray(), 0, p.packet.Count);
-                    }
-
-                    temp = ms.ToArray();
-                }
-
                 packetwh.AddRange(Util.IntToByteArrayLittle(p.packet.Count)); // size WHEN DECOMPRESSED??? WTF?
-                packetwh.AddRange(p.packet);
+                packetwh.AddRange(temp);
+
+                packetwh.AddRange(new byte[4]);
 
                 paddinglen = 8 - ((packetwh.Count + 1) % 8);
 
@@ -126,8 +143,11 @@ namespace GrandCheese.Util
                 {
                     paddinglen += 8;
                 }
-            } else
+            }
+            else
             {
+                packetwh.AddRange(Util.ShortToByteArrayBig((short)p.opcode)); // ID
+                packetwh.AddRange(Util.IntToByteArrayBig(p.packet.Count)); // Size - CHECK
                 packetwh.Add(0x00);
                 packetwh.AddRange(p.packet);
             }
@@ -145,6 +165,15 @@ namespace GrandCheese.Util
             packetwh.AddRange(padding);
 
             byte[] realdata = packetwh.ToArray();
+
+            if (compress)
+            {
+                Log.Get().Info("Packet COMPRESSED: {0}", Util.ConvertBytesToHexString(realdata));
+            }
+            else
+            {
+                Log.Get().Info("Packet NOT COMPRESSED: {0}", Util.ConvertBytesToHexString(realdata));
+            }
 
             using (var ms = new MemoryStream())
             {

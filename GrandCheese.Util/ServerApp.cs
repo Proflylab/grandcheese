@@ -141,20 +141,27 @@ namespace GrandCheese.Util
                     var currentIteration = 0;
                     var readBytes = 0;
 
-                    // make sure this isn't going to be an infinite loop
-                    for (int i = 0; i < 500; i++)
+                    try
                     {
-                        if (packetSize * currentIteration >= recBuf.Length)
+                        // make sure this isn't going to be an infinite loop
+                        for (int i = 0; i < 500; i++)
                         {
-                            break;
+                            if (packetSize * currentIteration >= recBuf.Length)
+                            {
+                                break;
+                            }
+
+                            packetSize = (short)((recBuf[packetSize * currentIteration + 1] << 8) + recBuf[packetSize * currentIteration]);
+                            var nextPacket = recBuf.Skip(readBytes).Take(packetSize).ToArray();
+                            currentIteration++;
+                            readBytes += packetSize;
+
+                            packets.Add(nextPacket);
                         }
-
-                        packetSize = (short)((recBuf[packetSize * currentIteration + 1] << 8) + recBuf[packetSize * currentIteration]);
-                        var nextPacket = recBuf.Skip(readBytes).Take(packetSize).ToArray();
-                        currentIteration++;
-                        readBytes += packetSize;
-
-                        packets.Add(nextPacket);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.Error(ex, "Unable to process packet. Perhaps a malformed packet was sent?");
                     }
                 }
                 else
@@ -208,7 +215,7 @@ namespace GrandCheese.Util
                 }
                 else
                 {
-                    Log.Get().Warn("Unknown packet received. Opcode: {0} Length: {1}", opcode, length);
+                    Log.Get().Warn("Unknown packet received. Opcode: {0} Length: {1}", ProcessSettings.isGame ? ((GameOpcodes)opcode).ToString() : ((LoginOpcodes)opcode).ToString(), length);
                 }
             }
             catch (Exception ex)

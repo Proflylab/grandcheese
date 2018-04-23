@@ -212,6 +212,12 @@ namespace GrandCheese.Util
         {
             foreach(var arg in args)
             {
+                if(arg == null)
+                {
+                    WriteInt(0);
+                    continue;
+                }
+
                 if(arg.GetType() == typeof(int))
                 {
                     WriteInt((int)arg);

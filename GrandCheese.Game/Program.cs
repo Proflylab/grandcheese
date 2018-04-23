@@ -38,14 +38,14 @@ namespace GrandCheese.Game
 
             serverApp.CreateUserClient = (Client c) =>
             {
-                c.User = (object)(new UserClient(c));
+                c.User = new UserClient(c);
             };
 
             serverApp.CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
             {
                 if(c.User == null)
                 {
-                    c.User = (object)(new UserClient(c));
+                    c.User = new UserClient(c);
                 }
 
                 var user = (UserClient)c.User;

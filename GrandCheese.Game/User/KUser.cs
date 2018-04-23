@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using GrandCheese.Game.Guild;
+using GrandCheese.Util.Extensions;
 
 namespace GrandCheese.Game.User
 {
@@ -99,17 +100,13 @@ namespace GrandCheese.Game.User
 
             Packet pLogin = new Packet((short)GameOpcodes.EVENT_VERIFY_ACCOUNT_ACK);
 
-            pLogin.WriteUnicodeString(username, true);
-            if (nick == null)
-            {
-                pLogin.WriteInt(0); // no nickname
-            } else
-            {
-                pLogin.WriteUnicodeString(nick, true);
-            }
-            pLogin.WriteInt(0); // ucOK
-            pLogin.WriteString(password, true);
-
+            pLogin.Put(
+                username.ToWideString(),
+                nick?.ToWideString(),
+                0, // ucOK,
+                password
+            );
+            
             // test
             //pLogin.WriteHexString("00 2E 00 31 00 36 00 31 00 00");
             pLogin.WriteHexString("00 30 00 2E 00 2E 00 34 00 00");
@@ -129,13 +126,15 @@ namespace GrandCheese.Game.User
             // TODO: Characters
             //https://github.com/lovemomory/GrandChaseSeasonV/blob/master/GrandChaseSeasonV/src/game/user/GameUser.java#L189
             pLogin.WriteInt(0);
-            /*pLogin.WriteInt(1); // OK
+
+            /*
+            pLogin.WriteInt(1); // OK
 
             pLogin.WriteInt(0); // Index of character
-            pLogin.Write(1); // m_cCharType
+            pLogin.Write(19); // m_cCharType
             pLogin.WriteUnicodeString("DIU", true); // m_strCharName
-            pLogin.Write(1); // m_cPromotion
-            pLogin.Write(1); // m_cCurrentPromotion
+            pLogin.Write(0); // m_cPromotion
+            pLogin.Write(0); // m_cCurrentPromotion
             pLogin.WriteLong(0); // m_biInitExp
             pLogin.WriteInt(0); // m_iInitWin
             pLogin.WriteInt(0); // m_iInitLose
@@ -153,8 +152,57 @@ namespace GrandCheese.Game.User
             pLogin.WriteInt(0); // MaxSkillTreePoint
 
             pLogin.Write(0); // 오류나면 바이트 말고 인트로..
+
+            pLogin.WriteLong(100); // m_biInitTotalExp
+            pLogin.WriteLong(100); // m_biTotalExp
+
+            // EquipItemInfo
+            pLogin.WriteInt(0);
+
+            // TODO: What are these?
+            /*
+            pLogin.WriteInt(item.Id);
+            pLogin.WriteInt(1); // Count?
+            pLogin.WriteInt(item.ItemId);
+            //pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+            pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+            pLogin.WriteInt(0);
+            pLogin.WriteInt(0);
+            pLogin.WriteInt(0);
+            pLogin.WriteInt(0);
+
+            pLogin.WriteShort(0);
+
+            pLogin.Write(0);
             */
 
+            /*
+            pLogin.WriteBool(false); // m_bChangeWeaponLock
+
+            // Promotion (Vector)
+            pLogin.WriteInt(0); // Size
+            //pLogin.Write(1); // Promotion
+
+            // ELOUserData
+            pLogin.WriteInt(0); // m_nInitELOWin
+            pLogin.WriteInt(0); // m_nELOWin
+            pLogin.WriteInt(0); // m_nInitELOLose
+            pLogin.WriteInt(0); // m_nELOLose
+            pLogin.WriteInt(1660); // m_nRatingPoint
+            pLogin.WriteInt(1660); // m_nInitRatingPoint
+            pLogin.WriteInt(0); // m_nELOType
+            pLogin.WriteInt(0); // m_nInitMatchTotalCount
+            pLogin.WriteInt(0); // m_nMatchTotalCount
+            pLogin.WriteInt(0); // m_nLastWinLose
+            pLogin.WriteInt(0); // m_nConstantK
+            pLogin.Write(0); // m_ucGrade
+            pLogin.WriteInt(0); // m_nPlacementTestPlayCount
+            
+            // New in Season 5:
+            pLogin.WriteInt(0); // Character slot position
+            pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 30 29");
+            */
+            /////////////////////
 
             pLogin.WriteShort(9401); // 포트긴 한데 udp겠지..? 9401 in Madness
             pLogin.WriteInt(userId);

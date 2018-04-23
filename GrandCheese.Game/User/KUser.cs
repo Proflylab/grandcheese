@@ -320,5 +320,42 @@ namespace GrandCheese.Game.User
             pLoginfail.WriteInt(0);
             return pLoginfail;
         }
+
+        [Opcode(GameOpcodes.EVENT_REGISTER_NICKNAME_REQ)]
+        public void RegisterNickname(Client client, Packet packet)
+        {
+            var nickname = packet.ReadUnicodeString();
+
+            var response = new Packet(GameOpcodes.EVENT_REGISTER_NICKNAME_ACK);
+
+            using (var db = Database.Get())
+            {
+                var user = db.Query<GrandCheese.Util.Models.User>("SELECT * FROM users WHERE nickname ILIKE @nickname",
+                    new { nickname }).FirstOrDefault();
+
+                if (user != null)
+                {
+                    // Already used
+                    response.Put(
+                        1, // Failure
+                        nickname.ToWideString()
+                    );
+                }
+                else
+                {
+                    db.Query("UPDATE users SET nickname = @nickname WHERE username = @username",
+                        new { username, nickname });
+
+                    response.Put(
+                        0, // Success
+                        nickname.ToWideString()
+                    );
+
+                    nick = nickname;
+                }
+            }
+
+            client.SendPacket(response);
+        }
     }
 }

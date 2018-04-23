@@ -34,34 +34,42 @@ namespace GrandCheese.Game
                 }
             }
 
-            var serverApp = new ServerApp();
-
-            serverApp.CreateUserClient = (Client c) =>
+            var serverApp = new ServerApp
             {
-                c.User = new UserClient(c);
-            };
-
-            serverApp.CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
-            {
-                if(c.User == null)
+                CreateUserClient = (Client c) =>
                 {
                     c.User = new UserClient(c);
-                }
+                },
 
-                var user = (UserClient)c.User;
-                var method = app.serverPackets[opcode];
-
-                Console.WriteLine(method.DeclaringType.Name);
-
-                switch(method.DeclaringType.Name)
+                CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
                 {
-                    case "KUser":
-                        method.Invoke(user.KUser, new object[] { c, p });
-                        break;
-                    default:
-                        Log.Get().Warn("Unhandled. Attempting to call as static.");
-                        method.Invoke(null, new object[] { c, p });
-                        break;
+                    if (c.User == null)
+                    {
+                        c.User = new UserClient(c);
+                    }
+
+                    var user = (UserClient)c.User;
+                    var method = app.serverPackets[opcode];
+
+                    Console.WriteLine(method.DeclaringType.Name);
+
+                    switch (method.DeclaringType.Name)
+                    {
+                        case "KUser":
+                            method.Invoke(user.KUser, new object[] { c, p });
+                            break;
+                        default:
+                            if (method.GetParameters().Length == 1)
+                            {
+                                method.Invoke(null, new object[] { user.KUser });
+                            }
+                            else
+                            {
+                                Log.Get().Warn("Unhandled. Attempting to call as static.");
+                                method.Invoke(null, new object[] { c, p });
+                            }
+                            break;
+                    }
                 }
             };
 

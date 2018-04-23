@@ -66,6 +66,7 @@
     <Compile Include="Guild\GuildUserInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="User\Character.cs" />
     <Compile Include="User\DungeonUserInfo.cs" />
     <Compile Include="User\UserClient.cs" />
     <Compile Include="User\KUser.cs" />

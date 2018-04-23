@@ -29,6 +29,18 @@ namespace GrandCheese.Util
             packet = new List<byte>();
         }
 
+        public Packet(GameOpcodes op)
+        {
+            opcode = (int)op;
+            packet = new List<byte>();
+        }
+
+        public Packet(LoginOpcodes op)
+        {
+            opcode = (int)op;
+            packet = new List<byte>();
+        }
+
         // Write
 
         public void Write(byte b)

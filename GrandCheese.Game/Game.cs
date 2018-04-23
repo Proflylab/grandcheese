@@ -273,6 +273,7 @@ namespace GrandCheese.Game
             u.userClient.Client.SendPacket(p, false);
         }
 
+        [Opcode(GameOpcodes.EVENT_GET_FULL_SP_INFO_REQ)]
         public static void EVENT_GET_FULL_SP_INFO_REQ(KUser u)
         {
             Packet p = new Packet((short)GameOpcodes.EVENT_GET_FULL_SP_INFO_ACK);
@@ -280,6 +281,7 @@ namespace GrandCheese.Game
             u.userClient.Client.SendPacket(p, true);
         }
 
+        [Opcode(GameOpcodes.EVENT_PET_COSTUM_LIST_REQ)]
         public static void EVENT_PET_COSTUM_LIST_REQ(KUser u)
         {
             Packet p = new Packet((short)GameOpcodes.EVENT_PET_COSTUM_LIST_ACK);
@@ -287,6 +289,7 @@ namespace GrandCheese.Game
             u.userClient.Client.SendPacket(p, false);
         }
 
+        [Opcode(GameOpcodes.EVENT_INVEN_BUFF_ITEM_LIST_REQ)]
         public static void EVENT_INVEN_BUFF_ITEM_LIST_REQ(KUser u)
         {
             Packet p = new Packet((short)GameOpcodes.EVENT_INVEN_BUFF_ITEM_LIST_ACK);
@@ -294,6 +297,7 @@ namespace GrandCheese.Game
             u.userClient.Client.SendPacket(p, true);
         }
 
+        [Opcode(GameOpcodes.EVENT_DEPOT_INFO_REQ)]
         public static void EVENT_DEPOT_INFO_REQ(KUser u)
         {
             Packet p = new Packet((short)GameOpcodes.EVENT_DEPOT_INFO_ACK);
@@ -301,7 +305,8 @@ namespace GrandCheese.Game
             u.userClient.Client.SendPacket(p, false);
         }
 
-        public static void EVENT_STAT_CLIENT_INFO(KUser u, Packet p)
+        [Opcode(GameOpcodes.EVENT_STAT_CLIENT_INFO)]
+        public static void EVENT_STAT_CLIENT_INFO(KUser u)
         {
             // 나중에 꼭 만드삼
         }

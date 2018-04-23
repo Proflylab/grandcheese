@@ -111,15 +111,6 @@ namespace GrandCheese.Util
             var iv = GenerateIV();
             
             _des.IV = iv;
-            
-            List<byte> newpkt = new List<byte>();
-
-            int paddinglen = 8 - ((7 + p.packet.Count + 1) % 8);
-            
-            if(paddinglen < 3)
-            {
-                paddinglen += 8;
-            }
 
             List<byte> packetwh = new List<byte>();
 
@@ -137,12 +128,6 @@ namespace GrandCheese.Util
 
                 packetwh.AddRange(new byte[4]);
 
-                paddinglen = 8 - ((packetwh.Count + 1) % 8);
-
-                if (paddinglen < 3)
-                {
-                    paddinglen += 8;
-                }
             }
             else
             {
@@ -153,6 +138,12 @@ namespace GrandCheese.Util
             }
 
             // padding!!
+            int paddinglen = 8 - ((packetwh.Count + 1) % 8);
+
+            if (paddinglen < 3)
+            {
+                paddinglen += 8;
+            }
 
             byte[] padding = new byte[paddinglen + 1];
 
@@ -166,15 +157,6 @@ namespace GrandCheese.Util
 
             byte[] realdata = packetwh.ToArray();
 
-            if (compress)
-            {
-                Log.Get().Info("Packet COMPRESSED: {0}", Util.ConvertBytesToHexString(realdata));
-            }
-            else
-            {
-                Log.Get().Info("Packet NOT COMPRESSED: {0}", Util.ConvertBytesToHexString(realdata));
-            }
-
             using (var ms = new MemoryStream())
             {
                 using (var cs = new CryptoStream(ms, _des.CreateEncryptor(), CryptoStreamMode.Write))
@@ -185,9 +167,11 @@ namespace GrandCheese.Util
                 realdata = ms.ToArray().Take(realdata.Length).ToArray(); // replace! this is our real real data now
             }
             
-            ushort length = (ushort)(realdata.Length + 26);
+            int length = realdata.Length + 26;
+            
+            List<byte> newpkt = new List<byte>();
 
-            newpkt.AddRange(BitConverter.GetBytes(length));
+            newpkt.AddRange(BitConverter.GetBytes((ushort)length));
 
             // PREFIX
             newpkt.AddRange(prefix);
@@ -213,8 +197,6 @@ namespace GrandCheese.Util
             byte[] iv = p.packet.Skip(8).Take(8).ToArray();
 
             byte[] packetdata = p.packet.Skip(16).Take(p.packet.Count - 16 - GC_HMAC_SIZE).ToArray();
-
-            Log.Get().Trace("[Receive] Packet: {0}", Util.ConvertBytesToHexString(p.packet.ToArray()));
 
             _des.IV = iv;
 
@@ -263,6 +245,8 @@ namespace GrandCheese.Util
 
                 newpacket = null;
             }
+            
+            Log.Get().Trace("[Receive] Packet: {0}", Util.ConvertBytesToHexString(p.packet.ToArray()));
 
             iv = null;
             packetdata = null;

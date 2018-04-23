@@ -221,6 +221,7 @@ namespace GrandCheese.Util
             catch (Exception ex)
             {
                 logger.Error(ex, "Unable to handle packet. Perhaps a malformed packet was sent?");
+                logger.Trace(Util.ConvertBytesToHexString(b));
             }
         }
     }

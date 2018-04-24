@@ -12,8 +12,10 @@ using System.Reflection;
 
 namespace GrandCheese.Game
 {
-    class Program
+    class ServerMain
     {
+        public static Server Info = null;
+
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
@@ -31,7 +33,7 @@ namespace GrandCheese.Game
 
                 if (server != null)
                 {
-                    Data.Data.Server = server;
+                    Info = server;
                 }
             }
 
@@ -89,7 +91,7 @@ namespace GrandCheese.Game
                 }
             };
 
-            serverApp.StartServer(Data.Data.Server.Port, "game");
+            serverApp.StartServer(ServerMain.Info.Port, "game");
 
             // This won't work on Mono probably
             while (true) Console.ReadLine();

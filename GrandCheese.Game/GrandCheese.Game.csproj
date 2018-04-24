@@ -60,7 +60,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Data.cs" />
     <Compile Include="Data\KSimpleDate.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Guild\GuildUserInfo.cs" />

@@ -13,8 +13,10 @@ using Dapper;
 
 namespace GrandCheese
 {
-    class Program
+    class ServerMain
     {
+        public static List<Server> Servers = new List<Server>();
+
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
@@ -28,14 +30,14 @@ namespace GrandCheese
             Log.Get().Info("Getting server list...");
             using (var db = Database.Get())
             {
-                var servers = db.Query<Server>("SELECT * FROM servers").ToArray();
+                var dbServers = db.Query<Server>("SELECT * FROM servers").ToArray();
 
-                foreach (var server in servers)
+                foreach (var server in dbServers)
                 {
-                    Data.Servers.Add(server);
+                    Servers.Add(server);
                 }
             }
-            Log.Get().Info("Loaded {0} server{1}.", Data.Servers.Count, Data.Servers.Count == 1 ? "" : "s");
+            Log.Get().Info("Loaded {0} server{1}.", Servers.Count, Servers.Count == 1 ? "" : "s");
 
             var serverApp = new ServerApp();
             serverApp.StartServer(9501);

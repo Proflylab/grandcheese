@@ -229,18 +229,17 @@ namespace GrandCheese.Util
                     WriteInt(0);
                     continue;
                 }
-
-                if(arg.GetType() == typeof(int))
+                if (arg.GetType() == typeof(byte))
+                {
+                    Write((byte)arg);
+                }
+                else if (arg.GetType() == typeof(int))
                 {
                     WriteInt((int)arg);
                 }
                 else if(arg.GetType() == typeof(string))
                 {
                     WriteString((string)arg, true);
-                }
-                else if (arg.GetType() == typeof(byte))
-                {
-                    Write((byte)arg);
                 }
                 else if (arg.GetType() == typeof(long))
                 {

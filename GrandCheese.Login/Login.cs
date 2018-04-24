@@ -70,9 +70,9 @@ namespace GrandCheese
                         Log.Get().Info("{0} logged in.", user.Username);
                         
                         var serverList = new Packet((short)LoginOpcodes.ENU_SERVER_LIST_NOT);
-                        serverList.WriteInt(Data.Servers.Count);
+                        serverList.WriteInt(ServerMain.Servers.Count);
                         int i = 1;
-                        foreach(var server in Data.Servers)
+                        foreach(var server in ServerMain.Servers)
                         {
                             serverList.Put(
                                 i,

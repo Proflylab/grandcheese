@@ -130,9 +130,9 @@ namespace GrandCheese.Game.User
             /*
             pLogin.WriteInt(1); // OK
 
-            pLogin.WriteInt(0); // Index of character
+            pLogin.Write(19); // Index of character
             pLogin.Write(19); // m_cCharType
-            pLogin.WriteUnicodeString("DIU", true); // m_strCharName
+            pLogin.WriteUnicodeString("", true); // m_strCharName
             pLogin.Write(0); // m_cPromotion
             pLogin.Write(0); // m_cCurrentPromotion
             pLogin.WriteLong(0); // m_biInitExp
@@ -141,7 +141,7 @@ namespace GrandCheese.Game.User
             pLogin.WriteInt(0); // m_iWin
             pLogin.WriteInt(0); // m_iLose
             pLogin.WriteLong(0); // m_biExp
-            pLogin.WriteInt(40); // m_dwLevel
+            pLogin.WriteInt(1); // m_dwLevel
 
             pLogin.WriteInt(0); // m_vecEquipItems.size()
 
@@ -206,7 +206,7 @@ namespace GrandCheese.Game.User
 
             pLogin.WriteShort(9401); // 포트긴 한데 udp겠지..? 9401 in Madness
             pLogin.WriteInt(userId);
-            pLogin.WriteUnicodeString(Data.Data.Server.Name, true);
+            pLogin.WriteUnicodeString(ServerMain.Info.Name, true);
 
             // int 3 在lovemomory的代碼
             //pLogin.WriteInt(3); // New user, initial connection, reconnection? 03 in Madness
@@ -238,7 +238,7 @@ namespace GrandCheese.Game.User
             pLogin.WriteInt(0); // 프로토콜
             pLogin.WriteInt(-1); // pair-left 레벨범위
             pLogin.WriteInt(-1); // pair-right 레벨범위
-            pLogin.WriteString(Data.Data.Server.IP, true); // 전달용
+            pLogin.WriteString(ServerMain.Info.IP, true); // 전달용
             
             // modified for test:
             //pLogin.WriteUnicodeString("", true); // 서버 설명

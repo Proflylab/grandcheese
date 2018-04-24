@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace GrandCheese.Game
 {
@@ -34,42 +35,57 @@ namespace GrandCheese.Game
                 }
             }
 
-            var serverApp = new ServerApp
+            var serverApp = new ServerApp();
+
+            serverApp.CreateUserClient = (Client c) =>
             {
-                CreateUserClient = (Client c) =>
+                c.User = (object)(new UserClient(c));
+            };
+
+            serverApp.CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
+            {
+                if (c.User == null)
                 {
-                    c.User = new UserClient(c);
-                },
+                    c.User = (object)(new UserClient(c));
+                }
 
-                CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
+                var user = (UserClient)c.User;
+                var method = app.serverPackets[opcode];
+
+                Console.WriteLine(method.DeclaringType.Name);
+                var invocationArgs = new List<object>();
+
+                foreach (var param in method.GetParameters())
                 {
-                    if (c.User == null)
+                    if (param.ParameterType == typeof(Client))
                     {
-                        c.User = new UserClient(c);
+                        invocationArgs.Add(c);
                     }
-
-                    var user = (UserClient)c.User;
-                    var method = app.serverPackets[opcode];
-
-                    Console.WriteLine(method.DeclaringType.Name);
-
-                    switch (method.DeclaringType.Name)
+                    else if (param.ParameterType == typeof(Packet))
                     {
-                        case "KUser":
-                            method.Invoke(user.KUser, new object[] { c, p });
-                            break;
-                        default:
-                            if (method.GetParameters().Length == 1)
-                            {
-                                method.Invoke(null, new object[] { user.KUser });
-                            }
-                            else
-                            {
-                                Log.Get().Warn("Unhandled. Attempting to call as static.");
-                                method.Invoke(null, new object[] { c, p });
-                            }
-                            break;
+                        invocationArgs.Add(p);
                     }
+                    else if (param.ParameterType == typeof(KUser))
+                    {
+                        invocationArgs.Add(user.KUser);
+                    }
+                }
+
+                switch (method.DeclaringType.Name)
+                {
+                    case "KUser":
+                        method.Invoke(user.KUser, invocationArgs.ToArray());
+                        break;
+                    default:
+                        try
+                        {
+                            method.Invoke(null, invocationArgs.ToArray());
+                        }
+                        catch (TargetInvocationException ex)
+                        {
+                            Log.Get().Error(ex, "Unhandled packet. Failed to call as static.");
+                        }
+                        break;
                 }
             };
 

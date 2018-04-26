@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Net;
 using GrandCheese.Game.Guild;
 using GrandCheese.Util.Extensions;
+using GrandCheese.Game.Inventory;
 
 namespace GrandCheese.Game.User
 {
@@ -27,6 +28,7 @@ namespace GrandCheese.Game.User
         public int specialBonusPoints = 0;
         public int attendTime = 0;
         public int attendPoint = 0;
+        public List<KItem> items = new List<KItem>();
 
         public UserClient userClient = null;
 
@@ -113,8 +115,8 @@ namespace GrandCheese.Game.User
 
             pLogin.WriteIntLittle(BitConverter.ToInt32((client.Sock.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes(), 0));
             
-            //GuildUserInfo.write_NoGuildUserInfoPacket(pLogin);
-            pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+            GuildUserInfo.write_NoGuildUserInfoPacket(pLogin);
+            //pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
             // test
             // OK! matches madness kinda
@@ -216,8 +218,7 @@ namespace GrandCheese.Game.User
 
             // TODO: Server message...?
             // https://github.com/lovemomory/GrandChaseSeasonV/blob/master/GrandChaseSeasonV/src/game/user/GameUser.java#L201
-            pLogin.WriteInt(0);
-            //pLogin.WriteUnicodeString("呢個係咩嚟...", true);
+            pLogin.WriteInt(0); // If not 0, the client crashes
 
             DungeonUserInfo.write_mapDifficulty(pLogin);
             
@@ -242,11 +243,10 @@ namespace GrandCheese.Game.User
             
             // modified for test:
             //pLogin.WriteUnicodeString("", true); // 서버 설명
-            pLogin.WriteInt(0); // No description???
+            pLogin.WriteInt(0); // No description
 
             pLogin.WriteInt(0); // max level
             
-
             pLogin.Write(3); // m_cRecommendUser, 0x3
             
             //pLogin.WriteInt(0x57F173AC); // m_tFirstLoginTime
@@ -294,7 +294,7 @@ namespace GrandCheese.Game.User
                 pLogin.WriteInt(i); // Send twice, one index of map; other character ID
                 pLogin.WriteInt(0);
                 pLogin.WriteInt(0);
-                pLogin.WriteShort((short)0);
+                pLogin.WriteShort(0);
             }
 
             // ?
@@ -337,7 +337,7 @@ namespace GrandCheese.Game.User
                 {
                     // Already used
                     response.Put(
-                        1, // Failure
+                        -9, // Failure: FF FF FF F7
                         nickname.ToWideString()
                     );
                 }
@@ -356,6 +356,96 @@ namespace GrandCheese.Game.User
             }
 
             client.SendPacket(response);
+        }
+
+        [Opcode(GameOpcodes.EVENT_CHAR_SELECT_JOIN_REQ)]
+        public void SendCharacterGameData(Packet packet)
+        {
+            Log.Get().Info($"<{ServerMain.Info.Name}> {nick} is joining the world.");
+
+            // in case
+            if(nick == null)
+            {
+                return;
+            }
+
+            Game.Send_EVENT_NONE_INVEN_ITEM_LIST_NOT(this);
+            Game.Send_EVENT_STRENGTH_MATERIAL_INFO(this);
+            Game.Send_EVENT_MATCH_RANK_REWARD_NOT(this);
+            Game.Send_EVENT_HERO_DUNGEON_INFO_NOT(this);
+            Game.Send_EVENT_USER_CHANGE_WEAPON_NOT(this);
+            Game.Send_EVENT_NEW_CHAR_CARD_INFO_NOT(this);
+            Game.Send_EVENT_VIRTUAL_CASH_LIMIT_RATIO_NOT(this);
+            Game.Send_EVENT_BAD_USER_INFO_NOT(this);
+            Game.Send_EVENT_COLLECTION_MISSION_NOT(this);
+            Game.Send_EVENT_HELL_TICKET_FREE_MODE_NOT(this);
+            Game.Send_EVENT_CAPSULE_LIST_NOT(this);
+            Game.Send_EVENT_MISSION_PACK_LIST_NOT(this);
+            Game.Send_EVENT_RAINBOW_EVENT_NOT(this);
+            Game.Send_EVENT_RKTORNADO_ITEM_LIST_NOT(this);
+            Game.Send_EVENT_ITEM_COMPOSE_INFO_NOT(this);
+            Game.Send_EVENT_ITEM_TRADE_LIST_NOT(this);
+            Game.Send_EVENT_NPC_GIFTS_NOT(this);
+            Game.Send_EVENT_ITEM_CHARPROMOTION_LEVEL_NOT(this);
+            Game.Send_EVENT_GP_ATTRIBUTE_INIT_ITEM_LIST(this);
+            Game.Send_EVENT_GP_ATTRIBUTE_RANDOM_ITEM_LIST(this);
+            Game.Send_EVENT_ITEM_ATTRIBUTE_RANDOM_SELECT_LIST(this);
+            Game.Send_EVENT_SINGLE_RANDOM_ATTRIBUTE_ITEM_LIST_NOT(this);
+            Game.Send_EVENT_MAX_CHAR_SP_LEVEL_NOT(this);
+            Game.Send_EVENT_GUILD_LEVEL_TABLE_NOT(this);
+            Game.Send_EVENT_MISSION_GETTABLE_CONDITION_INFO_NOT(this);
+            Game.Send_EVENT_EXP_POTION_LIST_ACK(this);
+            Game.Send_EVENT_AGIT_STORE_CATALOG_ACK(this);
+        }
+
+        [Opcode(GameOpcodes.EVENT_CHANGE_CHARACTER_INFO_REQ)]
+        public void ChangeCharacter(Packet packet)
+        {
+            int oldChar = packet.ReadByte();
+            int newChar = packet.ReadByte();
+
+            Log.Get().Info($"<{ServerMain.Info.Name}> {nick} has changed characters ({oldChar} -> {newChar}).");
+
+            Packet pr;
+            pr = new Packet(GameOpcodes.EVENT_FINISHED_MISSION_LIST_NOT);
+            pr.WriteInt(0);
+            userClient.Client.SendPacket(pr, false);
+
+            pr = new Packet(GameOpcodes.EVENT_WORLDBOSS_CONTRIBUTION_POINT_UPDATE_ACK);
+            pr.WriteInt(-100);
+            pr.WriteInt(0);
+            userClient.Client.SendPacket(pr, false);
+
+            pr = new Packet(GameOpcodes.EVENT_GRADUATE_CHARACTER_USER_INFO_NOT);
+            pr.WriteInt(0);
+            pr.WriteInt(0);
+            pr.WriteInt(0);
+            pr.WriteInt(0);
+            pr.WriteInt(0);
+            pr.WriteInt(0);
+            userClient.Client.SendPacket(pr, false);
+
+            pr = new Packet(GameOpcodes.EVENT_WEEKLY_REWARD_LIST_NOT);
+            pr.WriteHexString("00 00 00 03 00 00 ab d6 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ab e0 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ab ea 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+            userClient.Client.SendPacket(pr, true);
+
+            pr = new Packet(GameOpcodes.EVENT_MONTHLY_REWARD_LIST_NOT);
+            pr.WriteHexString("00 00 00 09 00 02 03 82 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 03 aa 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 03 d2 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 03 fa 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 04 22 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 04 4a 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 04 72 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 04 90 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 e5 04 00 00 00 00 00 00 00 00 ff ff ff ff ff ff ff ff 00 00 00 00 00 00 00 00 00 0f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 4c 20 e4 00 00 00 00 01 d4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ");
+            userClient.Client.SendPacket(pr, true);
+
+            pr = new Packet(GameOpcodes.EVENT_DUNGEON_PERSONAL_RECORD_INFO_NOT);
+            pr.WriteHexString("00 00 00 00 02 00 00 00 00");
+            userClient.Client.SendPacket(pr, false);
+
+            pr = new Packet(GameOpcodes.EVENT_CHANGE_CHARACTER_INFO_ACK);
+            pr.WriteInt(0);
+            pr.Write((byte)newChar);
+
+            /*pr.WriteInt(items.size());
+            foreach(var item in items)
+            {
+
+            }*/
         }
     }
 }

@@ -9,5 +9,7 @@ namespace GrandCheese.Util
     public class ProcessSettings
     {
         public static bool isGame = false;
+
+        public static Dictionary<string, object> interfaces = new Dictionary<string, object>();
     }
 }

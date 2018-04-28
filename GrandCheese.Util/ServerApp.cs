@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using GrandCheese.Util.Interfaces;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,10 +50,30 @@ namespace GrandCheese.Util
             Log.Get().Info("Handled opcodes: {0}", string.Join(", ", serverPackets.Keys.Select(x => "0x" + x.ToString("X2"))));
         }
 
+        public void PopulateInterfaces()
+        {
+            var classes = AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(t => t.GetTypes())
+                        .Where(i => typeof(ISerializable).IsAssignableFrom(i))
+                        .ToArray();
+
+            foreach (var cls in classes)
+            {
+                // ignore the base instance
+                if(cls.Name != "ISerializable")
+                {
+                    ProcessSettings.interfaces.Add(cls.Name, cls);
+                }
+            }
+
+            Log.Get().Info("Handled interfaces: {0}", string.Join(", ", ProcessSettings.interfaces.Keys));
+        }
+
         public void StartServer(int port, string type = "center")
         {
-            logger.Info("Populating packets...");
+            logger.Info("Populating packets and interfaces...");
             PopulatePackets();
+            PopulateInterfaces();
 
             logger.Info("Starting server...");
             try

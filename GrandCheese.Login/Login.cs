@@ -70,28 +70,8 @@ namespace GrandCheese
                         Log.Get().Info("{0} logged in.", user.Username);
                         
                         var serverList = new Packet((short)LoginOpcodes.ENU_SERVER_LIST_NOT);
-                        serverList.WriteInt(ServerMain.Servers.Count);
-                        int i = 1;
-                        foreach(var server in ServerMain.Servers)
-                        {
-                            serverList.Put(
-                                i,
-                                i,
-                                server.Name.ToWideString(),
-                                server.IP,
-                                (short)server.Port,
-                                server.OnlineUsers,
-                                server.MaxUsers,
-                                server.ProtocolVersion,
-                                new GCPair(-1, -1), // RangeMinMaxLevel
-                                server.IP,
-                                server.Description.ToWideString(),
-                                0 // MaxLevel
-                            );
-
-                            i++;
-                        }
-
+                        serverList.Put(ServerMain.Servers);
+                        Log.Get().Trace(Util.Util.ConvertBytesToHexString(serverList.packet.ToArray()));
                         client.SendPacket(serverList);
 
                         SendChannelNews(client, packet);

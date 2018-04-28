@@ -19,7 +19,7 @@ namespace GrandCheese.Game.Inventory
         // todo: add as type in serializer also
         public float Value { get; set; } = 0.0f;
 
-        public void Serialize(Packet packet)
+        public void Serialize(Packet packet, int i)
         {
             packet.Put(
                 SlotId,

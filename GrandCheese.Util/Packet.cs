@@ -1,4 +1,5 @@
 ﻿using GrandCheese.Util.Exceptions;
+using GrandCheese.Util.Interfaces;
 using GrandCheese.Util.Types;
 using System;
 using System.Collections;
@@ -223,13 +224,17 @@ namespace GrandCheese.Util
 
         public void Put(params object[] args)
         {
+            int i = -1;
             foreach(var arg in args)
             {
+                i++;
+
                 if(arg == null)
                 {
                     WriteInt(0);
                     continue;
                 }
+
                 if (arg.GetType() == typeof(byte) || arg.GetType() == typeof(char))
                 {
                     // char == byte
@@ -237,10 +242,12 @@ namespace GrandCheese.Util
 
                     Write((byte)arg);
                 }
-                else if (arg.GetType() == typeof(int) || arg.GetType() == typeof(uint))
+                else if (arg.GetType() == typeof(int) || arg.GetType() == typeof(uint) || arg.GetType() == typeof(float))
                 {
                     // if it's an unsigned int, pretend it's a normal int
                     // the client should handle it
+
+                    // todo: does float work?
 
                     WriteInt((int)arg);
                 }
@@ -248,8 +255,10 @@ namespace GrandCheese.Util
                 {
                     WriteString((string)arg, true);
                 }
-                else if (arg.GetType() == typeof(long))
+                else if (arg.GetType() == typeof(long) || arg.GetType() == typeof(UInt64) || arg.GetType() == typeof(double))
                 {
+                    // todo: does double work here?
+
                     WriteLong((long)arg);
                 }
                 else if (arg.GetType() == typeof(short) || arg.GetType() == typeof(ushort))
@@ -297,9 +306,34 @@ namespace GrandCheese.Util
                 }
                 else
                 {
-                    // TODO: Fallback to an interface
+                    // Attempt to fall back to an interface
+                    // Ignore any errors, we'll let the exception deal with that.
+                    try
+                    {
+                        var name = arg.GetType().Name;
 
-                    throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().FullName);
+                        Log.Get().Trace("Looking for interface: {0}", name);
+
+                        if (ProcessSettings.interfaces.ContainsKey(name))
+                        {
+                            // Attempt to cast it to ISerializable.
+                            // Since all of these classes have void Serialize(Packet),
+                            // we can just call it with this as an argument
+
+                            ((ISerializable)arg).Serialize(this, i);
+
+                            Log.Get().Trace("Serialized {0}.", name);
+                        }
+                        else
+                        {
+                            throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().Name);
+                        }
+                    }
+                    catch
+                    {
+                        // Assume 
+                        throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().Name);
+                    }
                 }
             }
         }

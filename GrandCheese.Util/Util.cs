@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Util
 {
-    class Util
+    public class Util
     {
         public static byte[] IntToByteArrayLittle(int data)
         {

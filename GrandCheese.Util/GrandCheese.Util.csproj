@@ -79,7 +79,7 @@
     <Compile Include="Interfaces\ISerializable.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LoginOpcodes.cs" />
-    <Compile Include="Models\Server.cs" />
+    <Compile Include="Models\KServerInfo.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Opcode.cs" />
     <Compile Include="Packet.cs" />

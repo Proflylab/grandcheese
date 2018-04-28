@@ -10,12 +10,13 @@ using System.Net;
 using System.Reflection;
 using GrandCheese.Util.Models;
 using Dapper;
+using GrandCheese.Data;
 
 namespace GrandCheese
 {
     class ServerMain
     {
-        public static List<Server> Servers = new List<Server>();
+        public static List<KServerInfo> Servers = new List<KServerInfo>();
 
         static void Main(string[] args)
         {
@@ -30,7 +31,7 @@ namespace GrandCheese
             Log.Get().Info("Getting server list...");
             using (var db = Database.Get())
             {
-                var dbServers = db.Query<Server>("SELECT * FROM servers").ToArray();
+                var dbServers = db.Query<KServerInfo>("SELECT * FROM servers").ToArray();
 
                 foreach (var server in dbServers)
                 {

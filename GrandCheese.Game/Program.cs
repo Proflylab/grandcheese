@@ -9,12 +9,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using GrandCheese.Data;
 
 namespace GrandCheese.Game
 {
     class ServerMain
     {
-        public static Server Info = null;
+        public static KServerInfo Info = null;
 
         static void Main(string[] args)
         {
@@ -28,7 +29,7 @@ namespace GrandCheese.Game
 
             using (var db = Database.Get())
             {
-                var server = db.Query<Server>("SELECT * FROM servers WHERE port = @port",
+                var server = db.Query<KServerInfo>("SELECT * FROM servers WHERE port = @port",
                     new { port = 9401 }).FirstOrDefault();
 
                 if (server != null)
@@ -37,61 +38,62 @@ namespace GrandCheese.Game
                 }
             }
 
-            var serverApp = new ServerApp();
-
-            serverApp.CreateUserClient = (Client c) =>
+            var serverApp = new ServerApp
             {
-                c.User = (object)(new UserClient(c));
-            };
-
-            serverApp.CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
-            {
-                if (c.User == null)
+                CreateUserClient = (Client c) =>
                 {
                     c.User = (object)(new UserClient(c));
-                }
+                },
 
-                var user = (UserClient)c.User;
-                var method = app.serverPackets[opcode];
-
-                Console.WriteLine(method.DeclaringType.Name);
-                var invocationArgs = new List<object>();
-
-                foreach (var param in method.GetParameters())
+                CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
                 {
-                    if (param.ParameterType == typeof(Client))
+                    if (c.User == null)
                     {
-                        invocationArgs.Add(c);
+                        c.User = new UserClient(c);
                     }
-                    else if (param.ParameterType == typeof(Packet))
-                    {
-                        invocationArgs.Add(p);
-                    }
-                    else if (param.ParameterType == typeof(KUser))
-                    {
-                        invocationArgs.Add(user.KUser);
-                    }
-                }
 
-                switch (method.DeclaringType.Name)
-                {
-                    case "KUser":
-                        method.Invoke(user.KUser, invocationArgs.ToArray());
-                        break;
-                    default:
-                        try
+                    var user = (UserClient)c.User;
+                    var method = app.serverPackets[opcode];
+
+                    Console.WriteLine(method.DeclaringType.Name);
+                    var invocationArgs = new List<object>();
+
+                    foreach (var param in method.GetParameters())
+                    {
+                        if (param.ParameterType == typeof(Client))
                         {
-                            method.Invoke(null, invocationArgs.ToArray());
+                            invocationArgs.Add(c);
                         }
-                        catch (TargetInvocationException ex)
+                        else if (param.ParameterType == typeof(Packet))
                         {
-                            Log.Get().Error(ex, "Unhandled packet. Failed to call as static.");
+                            invocationArgs.Add(p);
                         }
-                        break;
+                        else if (param.ParameterType == typeof(KUser))
+                        {
+                            invocationArgs.Add(user.KUser);
+                        }
+                    }
+
+                    switch (method.DeclaringType.Name)
+                    {
+                        case "KUser":
+                            method.Invoke(user.KUser, invocationArgs.ToArray());
+                            break;
+                        default:
+                            try
+                            {
+                                method.Invoke(null, invocationArgs.ToArray());
+                            }
+                            catch (TargetInvocationException ex)
+                            {
+                                Log.Get().Error(ex, "Unhandled packet. Failed to call as static.");
+                            }
+                            break;
+                    }
                 }
             };
 
-            serverApp.StartServer(ServerMain.Info.Port, "game");
+            serverApp.StartServer(Info.Port, "game");
 
             // This won't work on Mono probably
             while (true) Console.ReadLine();

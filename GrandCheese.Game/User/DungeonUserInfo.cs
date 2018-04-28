@@ -59,7 +59,7 @@ namespace GrandCheese.Game.User
         }
 
         // 하드코딩..
-        public static void write_mapDifficulty(Packet p)
+        public static void WriteMapDifficulty(Packet p)
         {
             p.WriteInt(85); // vector size
             write_DungeonUserInfoPacket_sub(p, 0x07, true, 1, true, 0, 0, 0);

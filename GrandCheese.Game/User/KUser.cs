@@ -220,7 +220,7 @@ namespace GrandCheese.Game.User
             // https://github.com/lovemomory/GrandChaseSeasonV/blob/master/GrandChaseSeasonV/src/game/user/GameUser.java#L201
             pLogin.WriteInt(0); // If not 0, the client crashes
 
-            DungeonUserInfo.write_mapDifficulty(pLogin);
+            DungeonUserInfo.WriteMapDifficulty(pLogin);
             
             // ?
             //pLogin.WriteHexString("00 18 00 00 00 00 00 01 00 12 9D FA 00 00 00 01 00 98 98 0F 00 00 00 00 59 6E 2F DB 59 6C DE 5B 00 00 00 00 00 00 00 00 29 E1 56 52 22 00 74 17");
@@ -286,20 +286,16 @@ namespace GrandCheese.Game.User
             pLogin.WriteHexString("88 FF E9 7D 9C 02 5A 13 00 5A D0 1F 00 00 00 00 00 74 A2 5F 5A CE A1 80"); // from madness
 
             pLogin.WriteInt(0); // ?
-            pLogin.WriteInt(20); // Character count
 
-            for (int i = 0; i < 20; i++)
-            {
-                pLogin.WriteInt(i);
-                pLogin.WriteInt(i); // Send twice, one index of map; other character ID
-                pLogin.WriteInt(0);
-                pLogin.WriteInt(0);
-                pLogin.WriteShort(0);
-            }
+            Character.WriteEnabledCharacters(pLogin);
 
             // ?
-            //pLogin.WriteHexString("00 00 00 07 00 00 00 68 00 16 5D 64 00 00 00 00 00 00 00 69 00 03 A1 EC 00 00 00 00 00 00 01 36 00 16 05 4E 00 00 00 01 00 00 01 37 00 12 C8 FC 00 00 00 01 00 00 01 38 00 13 AF A6 00 00 00 01 00 00 01 39 00 02 DF 6E 00 00 00 01 00 00 01 3A 00 08 5A D4 00 00 00 01 00 00 00 00 11 00 00");
-            pLogin.WriteHexString("00 00 00 07 00 00 00 72 00 17 F5 AC 00 00 00 00 00 00 00 73 00 10 8A 74 00 00 00 00 00 00 01 4F 00 05 B4 C8 00 00 00 01 00 00 01 50 00 18 2D B0 00 00 00 01 00 00 01 51 00 05 2E 2C 00 00 00 01 00 00 01 52 00 07 0C 88 00 00 00 01 00 00 01 53 00 04 F1 3C 00 00 00 01 00 00 00 04 FF 01 00");
+            pLogin.WriteHexString("00 00 00 07 00 00 00 68 00 16 5D 64 00 00 00 00 00 00 00 69 00 03 A1 EC 00 00 00 00 00 00 01 36 00 16 05 4E 00 00 00 01 00 00 01 37 00 12 C8 FC 00 00 00 01 00 00 01 38 00 13 AF A6 00 00 00 01 00 00 01 39 00 02 DF 6E 00 00 00 01 00 00 01 3A 00 08 5A D4 00 00 00 01");
+
+            pLogin.WriteInt(10); // Number of character slots
+
+            pLogin.WriteHexString("11 00 00");
+            //pLogin.WriteHexString("00 00 00 07 00 00 00 72 00 17 F5 AC 00 00 00 00 00 00 00 73 00 10 8A 74 00 00 00 00 00 00 01 4F 00 05 B4 C8 00 00 00 01 00 00 01 50 00 18 2D B0 00 00 00 01 00 00 01 51 00 05 2E 2C 00 00 00 01 00 00 01 52 00 07 0C 88 00 00 00 01 00 00 01 53 00 04 F1 3C 00 00 00 01 00 00 00 04 FF 01 00");
             
             client.SendPacket(pLogin, true);
             

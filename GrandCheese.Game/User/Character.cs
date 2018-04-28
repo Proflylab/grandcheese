@@ -10,6 +10,19 @@ namespace GrandCheese.Game.User
 {
     class Character
     {
+        public static void WriteEnabledCharacters(Packet p)
+        {
+            p.WriteInt(20);
+            for (int i = 0; i < 20; i++)
+            {
+                p.WriteInt(i);
+                p.WriteInt(i);
+                p.WriteInt(0);
+                p.WriteInt(0);
+                p.WriteShort(0);
+            }
+        }
+
         [Opcode(GameOpcodes.EVENT_NEW_CHAR_CHOICE_REQ)]
         public static void CreateNewCharacter(KUser user, Packet packet)
         {
@@ -22,35 +35,24 @@ namespace GrandCheese.Game.User
             p.Put((int)characterType);
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 01");
 
-            KItem.writeSiegTestEquipItems(p);
+            KItem.WriteSiegTestEquipItems(p);
 
-            // End items
+            p.WriteHexString("00 00 00 02 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 2C 00 00 01 2C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
-            p.WriteHexString("00 00 00 04 00 00 00 A0 00 00 00 02 60 00 00 00 00 00 00 00 00 00 00 00 06 40 00 00 00 00 00 00 06 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12 C0 00 00 12 C0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+            p.WriteInt(7); // ??????
+            
+            p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 FF EA 7D A8 00 00 00 55");
+            
+            DungeonUserInfo.WriteMapDifficulty(p); // lol
 
-            p.WriteInt(1); // Character slot position
+            KItem.WriteCreateSecondItems(p);
 
-            p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00");
+            p.WriteHexString("00 00 00 00 00 00 00 02 00 00 00 14 00 00 00");
 
-            p.WriteHexString("FF EA 7D A8"); // User ID? not sure
+            WriteEnabledCharacters(p);
 
-            p.WriteHexString("00 00 00 55");
-
-            DungeonUserInfo.write_mapDifficulty(p); // lol
-
-            KItem.writeCreateSecondItems(p);
-
-            p.WriteInt(20);
-            for (int i = 0; i < 20; i++)
-            {
-                p.WriteInt(i);
-                p.WriteInt(i);
-                p.WriteInt(0);
-                p.WriteInt(0);
-                p.WriteShort(0);
-            }
-
-            p.WriteHexString("00 00 00 01 00 00 00 01 00 00 E5 6A 00 00 00 00 01 FD 42 78 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 01 FD 42 78 08 00 00 00 00 00 00");
+            //p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 77 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
+            p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
 
             user.userClient.Client.SendPacket(p);
         }

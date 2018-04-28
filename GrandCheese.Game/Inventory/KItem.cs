@@ -11,12 +11,10 @@ namespace GrandCheese.Game.Inventory
     class KItem : ISerializable
     {
         // ItemUID / DB item ID
-        public int ItemUniqueId { get; set; }
-
-        public int Count { get; set; } = 0;
+        public long ItemUniqueId { get; set; }
 
         // Item ID (for the game)
-        public int ItemId { get; set; }
+        public uint ItemId { get; set; }
 
         // todo: type?
         public int Duration { get; set; } = -1;
@@ -50,7 +48,6 @@ namespace GrandCheese.Game.Inventory
         {
             packet.Put(
                 ItemId,
-                Count,
                 ItemUniqueId,
                 Duration,
                 InitDuration,
@@ -67,6 +64,7 @@ namespace GrandCheese.Game.Inventory
                 Attributes
             );
 
+            // ??????
             packet.WriteHexString("00 00 00 00 00 00 00 00 00 00");
             packet.WriteHexString("FF FF FF FF");
             packet.WriteHexString("01 A1");

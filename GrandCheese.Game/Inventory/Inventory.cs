@@ -15,8 +15,7 @@ namespace GrandCheese.Game.Inventory
 
             p.Put(
                 380300, // ID
-                0, // Count
-                10000001 // Item UID,
+                (long)10000001 // Item UID,
                 -1, // m_nDuration
                 -1, // m_nInitDuration
                 (byte)0x00, // m_cEnchantLevel
@@ -94,47 +93,41 @@ namespace GrandCheese.Game.Inventory
                 6,
 
                 380300, // Item ID, OK as-is (00 05 CD 8C)
-                0, // Count
-                10000001 // Item UID
+                (long)10000001 // Item UID
             );
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
             p.Put(
                 380310,
-                0,
-                10000002
+                (long)10000002
             );
 
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
             p.Put(
                 380320,
-                0,
-                10000003
+                (long)10000003
             );
 
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
             p.Put(
                 380330,
-                0,
-                10000004
+                (long)10000004
             );
 
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
             p.Put(
                 380340,
-                0,
-                10000005
+                (long)10000005
             );
 
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
             p.Put(
                 414490,
-                0,
-                10000006
+                (long)10000006
             );
 
 

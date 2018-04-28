@@ -1,4 +1,5 @@
-﻿using GrandCheese.Util;
+﻿using GrandCheese.Data;
+using GrandCheese.Util;
 using GrandCheese.Util.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace GrandCheese.Game.Inventory
         // todo: add as type in serializer also
         public float Value { get; set; } = 0.0f;
 
-        public void Serialize(Packet packet, int i)
+        public void Serialize(Packet packet, int i, object kUser = null)
         {
             packet.Put(
                 SlotId,

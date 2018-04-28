@@ -18,29 +18,34 @@ namespace GrandCheese.Util
 
         public int opcode = -1;
         public bool useVoodoo = false;
+        public object kUser = null;
 
-        public Packet(byte[] packet)
+        public Packet(byte[] packet, object kUser = null)
         {
             this.packet = new List<byte>();
             this.packet.AddRange(packet);
+            this.kUser = kUser;
         }
 
-        public Packet(int op)
+        public Packet(int op, object kUser = null)
         {
             opcode = op;
             packet = new List<byte>();
+            this.kUser = kUser;
         }
 
-        public Packet(GameOpcodes op)
+        public Packet(GameOpcodes op, object kUser = null)
         {
             opcode = (int)op;
             packet = new List<byte>();
+            this.kUser = kUser;
         }
 
-        public Packet(LoginOpcodes op)
+        public Packet(LoginOpcodes op, object kUser = null)
         {
             opcode = (int)op;
             packet = new List<byte>();
+            this.kUser = kUser;
         }
 
         // Write
@@ -221,14 +226,13 @@ namespace GrandCheese.Util
         {
             return Read() == 1;
         }
-
+        
         public void Put(params object[] args)
         {
-            int i = -1;
+            int listItemIndex = 0;
+
             foreach(var arg in args)
             {
-                i++;
-
                 if(arg == null)
                 {
                     WriteInt(0);
@@ -284,15 +288,8 @@ namespace GrandCheese.Util
                 {
                     // essentially, std::vector
 
-                    /*
-                    var type = arg.GetType().GetGenericArguments()[0];
-                    var listType = typeof(List<>).MakeGenericType(type);
+                    listItemIndex = 0; 
 
-                    // pretend it's a List<object> at this point
-                    var typedList = (IList)Activator.CreateInstance(listType);
-                    */
-
-                    // Can we do this...?
                     var list = (IList)arg;
 
                     Put(
@@ -302,6 +299,7 @@ namespace GrandCheese.Util
                     foreach(var obj in list)
                     {
                         Put(obj);
+                        listItemIndex++;
                     }
                 }
                 else
@@ -320,7 +318,7 @@ namespace GrandCheese.Util
                             // Since all of these classes have void Serialize(Packet),
                             // we can just call it with this as an argument
 
-                            ((ISerializable)arg).Serialize(this, i);
+                            ((ISerializable)arg).Serialize(this, listItemIndex, kUser);
 
                             Log.Get().Trace("Serialized {0}.", name);
                         }

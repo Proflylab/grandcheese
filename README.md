@@ -1,11 +1,15 @@
 # GrandCheese
 
-This is the source for an emulator for Grand Chase Season 5 (episode 3) called GrandCheese.
+This is the source of an emulator for Grand Chase Season 5 (episode 3) A lot of it is a loose port of [lovemomory/GrandChaseSeasonV](https://github.com/lovemomory/GrandChaseSeasonV) to C#.
 
-I might continue development in the future. It is a loose port of [lovemomory/GrandChaseSeasonV](https://github.com/lovemomory/GrandChaseSeasonV) to C#.
+This emulator uses PostgreSQL. Dapper and Npgsql are used to access the database.
 
-The database is PostgreSQL. Dapper and Npgsql are used to access the database.
+## Notes:
+* I did not worry about optimization while writing this.
+* This is a WIP.
+* The packet serializer is somewhat ugly at this point.
+* The code for everything else is _really_ ugly.
 
-Currently, there is enough to show a server list, but nothing more.
-
-I did not worry about optimization while writing this. Please beware of the dozens of allocations because of LINQ.
+## Credits:
+* [lovemomory](https://github.com/lovemomory)
+* ...and other people.

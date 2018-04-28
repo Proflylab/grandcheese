@@ -31,6 +31,8 @@ namespace GrandCheese.Game.User
         public int attendPoint = 0;
         public List<Inventory.Inventory> items = new List<Inventory.Inventory>();
 
+        public Character currentCharacter = null;
+
         public UserClient userClient = null;
 
         public KUser(UserClient userClient)

@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Game.User
 {
-    class Character
+    public class Character
     {
+        public int Id { get; set; }
+
         public static void WriteEnabledCharacters(Packet p)
         {
             p.WriteInt(20);

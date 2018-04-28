@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GrandCheese.Data;
+using GrandCheese.Game.User;
 using GrandCheese.Util;
 using GrandCheese.Util.Interfaces;
 
@@ -44,7 +46,7 @@ namespace GrandCheese.Game.Inventory
 
         public List<KAttributeInfo> Attributes { get; set; } = new List<KAttributeInfo>();
 
-        public void Serialize(Packet packet, int i)
+        public void Serialize(Packet packet, int i, object kUser = null)
         {
             packet.Put(
                 ItemId,
@@ -68,7 +70,9 @@ namespace GrandCheese.Game.Inventory
             packet.WriteHexString("00 00 00 00 00 00 00 00 00 00");
             packet.WriteHexString("FF FF FF FF");
             packet.WriteHexString("01 A1");
-            packet.WriteHexString("AB 5D 08 D7"); // Possibly user ID? [Character ID?]
+
+            //packet.WriteHexString("AB 5D 08 D7"); // Possibly user ID? [Character ID?]
+            packet.Put(((KUser)kUser).currentCharacter.Id); // ?
 
             // idfk what this is but i'm not going to question it.
             packet.WriteHexString("50 D0 00 00 08 00 00 00 00 00 00 00 00 00");

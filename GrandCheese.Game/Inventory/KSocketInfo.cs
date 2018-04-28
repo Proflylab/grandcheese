@@ -1,4 +1,5 @@
-﻿using GrandCheese.Util;
+﻿using GrandCheese.Game.User;
+using GrandCheese.Util;
 using GrandCheese.Util.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace GrandCheese.Game.Inventory
         public char SlotId { get; set; } = (char)0xFF;
         public char State { get; set; } = (char)0x02;
 
-        public void Serialize(Packet packet, int i)
+        public void Serialize(Packet packet, int i, object kUser = null)
         {
             packet.Put(
                 CardItemId,

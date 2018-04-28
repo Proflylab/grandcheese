@@ -1,6 +1,7 @@
 ﻿using GrandCheese.Util.Exceptions;
 using GrandCheese.Util.Types;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -229,12 +230,18 @@ namespace GrandCheese.Util
                     WriteInt(0);
                     continue;
                 }
-                if (arg.GetType() == typeof(byte))
+                if (arg.GetType() == typeof(byte) || arg.GetType() == typeof(char))
                 {
+                    // char == byte
+                    // /shrug
+
                     Write((byte)arg);
                 }
-                else if (arg.GetType() == typeof(int))
+                else if (arg.GetType() == typeof(int) || arg.GetType() == typeof(uint))
                 {
+                    // if it's an unsigned int, pretend it's a normal int
+                    // the client should handle it
+
                     WriteInt((int)arg);
                 }
                 else if(arg.GetType() == typeof(string))
@@ -264,9 +271,33 @@ namespace GrandCheese.Util
                     var pair = (GCPair)arg;
                     Put(pair.first, pair.second);
                 }
+                else if(arg is IList && arg.GetType().IsGenericType)
+                {
+                    // essentially, std::vector
+
+                    /*
+                    var type = arg.GetType().GetGenericArguments()[0];
+                    var listType = typeof(List<>).MakeGenericType(type);
+
+                    // pretend it's a List<object> at this point
+                    var typedList = (IList)Activator.CreateInstance(listType);
+                    */
+
+                    // Can we do this...?
+                    var list = (IList)arg;
+
+                    Put(
+                        list.Count
+                    );
+
+                    foreach(var obj in list)
+                    {
+                        Put(obj);
+                    }
+                }
                 else
                 {
-                    // TODO: Fallback to an Attribute
+                    // TODO: Fallback to an interface
 
                     throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().FullName);
                 }

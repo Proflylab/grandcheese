@@ -35,7 +35,7 @@ namespace GrandCheese.Game.User
             p.Put((int)characterType);
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 01");
 
-            KItem.WriteSiegTestEquipItems(p);
+            Inventory.Inventory.WriteSiegTestEquipItems(p);
 
             p.WriteHexString("00 00 00 02 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 2C 00 00 01 2C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
@@ -45,7 +45,7 @@ namespace GrandCheese.Game.User
             
             DungeonUserInfo.WriteMapDifficulty(p); // lol
 
-            KItem.WriteCreateSecondItems(p);
+            Inventory.Inventory.WriteCreateSecondItems(p);
 
             p.WriteHexString("00 00 00 00 00 00 00 02 00 00 00 14 00 00 00");
 

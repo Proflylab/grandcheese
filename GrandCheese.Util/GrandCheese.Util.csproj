@@ -76,6 +76,7 @@
     <Compile Include="Exceptions\UnhandledSerializerTypeException.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="GameOpcodes.cs" />
+    <Compile Include="Interfaces\ISerializable.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LoginOpcodes.cs" />
     <Compile Include="Models\Server.cs" />

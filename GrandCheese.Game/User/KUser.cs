@@ -10,6 +10,7 @@ using System.Net;
 using GrandCheese.Game.Guild;
 using GrandCheese.Util.Extensions;
 using GrandCheese.Game.Inventory;
+using System.Diagnostics;
 
 namespace GrandCheese.Game.User
 {
@@ -28,7 +29,7 @@ namespace GrandCheese.Game.User
         public int specialBonusPoints = 0;
         public int attendTime = 0;
         public int attendPoint = 0;
-        public List<KItem> items = new List<KItem>();
+        public List<Inventory.Inventory> items = new List<Inventory.Inventory>();
 
         public UserClient userClient = null;
 
@@ -355,15 +356,12 @@ namespace GrandCheese.Game.User
         }
 
         [Opcode(GameOpcodes.EVENT_CHAR_SELECT_JOIN_REQ)]
-        public void SendCharacterGameData(Packet packet)
+        public void OnCharacterJoinGame(Packet packet)
         {
             Log.Get().Info($"<{ServerMain.Info.Name}> {nick} is joining the world.");
 
             // in case
-            if(nick == null)
-            {
-                return;
-            }
+            Trace.Assert(nick != null, "nick was null", $"The nickname of user {userId} was null. Unable to send the character selection reply packet.");
 
             Game.Send_EVENT_NONE_INVEN_ITEM_LIST_NOT(this);
             Game.Send_EVENT_STRENGTH_MATERIAL_INFO(this);

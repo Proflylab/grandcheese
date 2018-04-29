@@ -18,34 +18,34 @@ namespace GrandCheese.Util
 
         public int opcode = -1;
         public bool useVoodoo = false;
-        public object kUser = null;
+        public object[] optional = null;
 
-        public Packet(byte[] packet, object kUser = null)
+        public Packet(byte[] packet, params object[] optional)
         {
             this.packet = new List<byte>();
             this.packet.AddRange(packet);
-            this.kUser = kUser;
+            this.optional = optional;
         }
 
-        public Packet(int op, object kUser = null)
+        public Packet(int op, params object[] optional)
         {
             opcode = op;
             packet = new List<byte>();
-            this.kUser = kUser;
+            this.optional = optional;
         }
 
-        public Packet(GameOpcodes op, object kUser = null)
+        public Packet(GameOpcodes op, params object[] optional)
         {
             opcode = (int)op;
             packet = new List<byte>();
-            this.kUser = kUser;
+            this.optional = optional;
         }
 
-        public Packet(LoginOpcodes op, object kUser = null)
+        public Packet(LoginOpcodes op, params object[] optional)
         {
             opcode = (int)op;
             packet = new List<byte>();
-            this.kUser = kUser;
+            this.optional = optional;
         }
 
         // Write
@@ -318,7 +318,7 @@ namespace GrandCheese.Util
                             // Since all of these classes have void Serialize(Packet),
                             // we can just call it with this as an argument
 
-                            ((ISerializable)arg).Serialize(this, listItemIndex, kUser);
+                            ((ISerializable)arg).Serialize(this, listItemIndex, optional);
 
                             Log.Get().Trace("Serialized {0}.", name);
                         }

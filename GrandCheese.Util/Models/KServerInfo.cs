@@ -32,7 +32,7 @@ namespace GrandCheese.Data
 
         public int MaxLevel { get; set; } = 0;
 
-        public void Serialize(Packet packet, int i, object kUser = null)
+        public void Serialize(Packet packet, int i, params object[] optional)
         {
             // KServerInfo uses 1 as an index
             // kinda gay

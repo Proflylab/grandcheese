@@ -16,7 +16,7 @@ namespace GrandCheese.Game.Inventory
         public char SlotId { get; set; } = (char)0xFF;
         public char State { get; set; } = (char)0x02;
 
-        public void Serialize(Packet packet, int i, object kUser = null)
+        public void Serialize(Packet packet, int i, params object[] optional)
         {
             packet.Put(
                 CardItemId,

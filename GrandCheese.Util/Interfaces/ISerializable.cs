@@ -8,6 +8,6 @@ namespace GrandCheese.Util.Interfaces
 {
     public interface ISerializable
     {
-        void Serialize(Packet packet, int i, object kUser = null);
+        void Serialize(Packet packet, int i, params object[] optional);
     }
 }

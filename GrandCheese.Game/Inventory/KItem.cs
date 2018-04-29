@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,8 +47,13 @@ namespace GrandCheese.Game.Inventory
 
         public List<KAttributeInfo> Attributes { get; set; } = new List<KAttributeInfo>();
 
-        public void Serialize(Packet packet, int i, object kUser = null)
+        public void Serialize(Packet packet, int i, params object[] optional)
         {
+            Trace.Assert(optional.Length > 0, "Missing parameter", "The person who wrote the function that called KItem.Serialize is an idiot and didn't pass in KUser.");
+            Trace.Assert(optional[0].GetType() == typeof(KUser), "Wrong parameter", "THE FIRST PARAMETER IS SUPPOSED TO BE A KUser, NOOB!!!!!!");
+
+            var kUser = (KUser)optional[0];
+
             packet.Put(
                 ItemId,
                 ItemUniqueId,
@@ -72,7 +78,7 @@ namespace GrandCheese.Game.Inventory
             packet.WriteHexString("01 A1");
 
             //packet.WriteHexString("AB 5D 08 D7"); // Possibly user ID? [Character ID?]
-            packet.Put(((KUser)kUser).currentCharacter.Id); // ?
+            packet.Put(kUser.currentCharacter.Id); // ?
 
             // idfk what this is but i'm not going to question it.
             packet.WriteHexString("50 D0 00 00 08 00 00 00 00 00 00 00 00 00");

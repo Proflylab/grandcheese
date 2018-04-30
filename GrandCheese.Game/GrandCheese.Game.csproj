@@ -64,6 +64,7 @@
     <Compile Include="Game.cs" />
     <Compile Include="Guild\GuildUserInfo.cs" />
     <Compile Include="Inventory\Inventory.cs" />
+    <Compile Include="Inventory\KEquipItem.cs" />
     <Compile Include="Inventory\KItem.cs" />
     <Compile Include="Inventory\KAttributeInfo.cs" />
     <Compile Include="Inventory\KSocketInfo.cs" />

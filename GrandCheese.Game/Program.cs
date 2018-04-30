@@ -54,8 +54,7 @@ namespace GrandCheese.Game
 
                     var user = (UserClient)c.User;
                     var method = app.serverPackets[opcode];
-
-                    Console.WriteLine(method.DeclaringType.Name);
+                    
                     var invocationArgs = new List<object>();
 
                     foreach (var param in method.GetParameters())

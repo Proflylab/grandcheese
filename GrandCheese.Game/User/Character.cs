@@ -31,7 +31,7 @@ namespace GrandCheese.Game.User
             var characterType = packet.ReadByte();
             Console.WriteLine("Character ID: {0}", characterType);
 
-            var p = new Packet(GameOpcodes.EVENT_NEW_CHAR_CHOICE_ACK);
+            var p = new Packet(GameOpcodes.EVENT_NEW_CHAR_CHOICE_ACK, user);
 
             p.Write(0x00); // m_ucOK
             p.Put((int)characterType);

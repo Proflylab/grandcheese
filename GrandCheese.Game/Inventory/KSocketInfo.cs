@@ -12,9 +12,9 @@ namespace GrandCheese.Game.Inventory
     class KSocketInfo : ISerializable
     {
         // todo: uint needs to be added as a type in the serializer
-        public uint CardItemId { get; set; } = (char)0x00;
-        public char SlotId { get; set; } = (char)0xFF;
-        public char State { get; set; } = (char)0x02;
+        public uint CardItemId { get; set; } = 0;
+        public byte SlotId { get; set; } = 0x00; // 0xFF
+        public byte State { get; set; } = 0x02;
 
         public void Serialize(Packet packet, int i, params object[] optional)
         {

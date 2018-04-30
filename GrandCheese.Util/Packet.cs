@@ -228,86 +228,85 @@ namespace GrandCheese.Util
         }
         
         public void Put(params object[] args)
-        {
+        {   
             int listItemIndex = 0;
-
-            foreach(var arg in args)
-            {
-                if(arg == null)
+            
+            try {
+                foreach (var arg in args)
                 {
-                    WriteInt(0);
-                    continue;
-                }
-
-                if (arg.GetType() == typeof(byte) || arg.GetType() == typeof(char))
-                {
-                    // char == byte
-                    // /shrug
-
-                    Write((byte)arg);
-                }
-                else if (arg.GetType() == typeof(int) || arg.GetType() == typeof(uint) || arg.GetType() == typeof(float))
-                {
-                    // if it's an unsigned int, pretend it's a normal int
-                    // the client should handle it
-
-                    // todo: does float work?
-
-                    WriteInt((int)arg);
-                }
-                else if(arg.GetType() == typeof(string))
-                {
-                    WriteString((string)arg, true);
-                }
-                else if (arg.GetType() == typeof(long) || arg.GetType() == typeof(UInt64) || arg.GetType() == typeof(double))
-                {
-                    // todo: does double work here?
-
-                    WriteLong((long)arg);
-                }
-                else if (arg.GetType() == typeof(short) || arg.GetType() == typeof(ushort))
-                {
-                    WriteShort((short)arg);
-                }
-                else if (arg.GetType() == typeof(bool))
-                {
-                    Write((byte)((bool)arg ? 0x01 : 0x060));
-                }
-                else if(arg.GetType() == typeof(GCWideString))
-                {
-                    WriteUnicodeString((GCWideString)arg.ToString(), true);
-                }
-                else if(arg.GetType() == typeof(GCPair))
-                {
-                    // TODO: Look into tuples or something idk
-
-                    var pair = (GCPair)arg;
-                    Put(pair.first, pair.second);
-                }
-                else if(arg is IList && arg.GetType().IsGenericType)
-                {
-                    // essentially, std::vector
-
-                    listItemIndex = 0; 
-
-                    var list = (IList)arg;
-
-                    Put(
-                        list.Count
-                    );
-
-                    foreach(var obj in list)
+                    if (arg == null)
                     {
-                        Put(obj);
-                        listItemIndex++;
+                        WriteInt(0);
+                        continue;
                     }
-                }
-                else
-                {
-                    // Attempt to fall back to an interface
-                    // Ignore any errors, we'll let the exception deal with that.
-                    try
+
+                    if (arg.GetType() == typeof(byte) || arg.GetType() == typeof(char))
                     {
+                        // char => byte
+                        // /shrug
+
+                        Write(Convert.ToByte(arg));
+                    }
+                    else if (arg.GetType() == typeof(int) || arg.GetType() == typeof(uint) || arg.GetType() == typeof(float))
+                    {
+                        // if it's an unsigned int, pretend it's a normal int
+                        // the client should handle it
+
+                        // todo: does float work?
+
+                        WriteInt(Convert.ToInt32(arg));
+                    }
+                    else if (arg.GetType() == typeof(string))
+                    {
+                        WriteString((string)arg, true);
+                    }
+                    else if (arg.GetType() == typeof(long) || arg.GetType() == typeof(UInt64) || arg.GetType() == typeof(double))
+                    {
+                        // todo: does double work here?
+
+                        WriteLong(Convert.ToInt64(arg));
+                    }
+                    else if (arg.GetType() == typeof(short) || arg.GetType() == typeof(ushort))
+                    {
+                        WriteShort((short)arg);
+                    }
+                    else if (arg.GetType() == typeof(bool))
+                    {
+                        Write((byte)((bool)arg ? 0x01 : 0x060));
+                    }
+                    else if (arg.GetType() == typeof(GCWideString))
+                    {
+                        WriteUnicodeString((GCWideString)arg.ToString(), true);
+                    }
+                    else if (arg.GetType() == typeof(GCPair))
+                    {
+                        // TODO: Look into tuples or something idk
+
+                        var pair = (GCPair)arg;
+                        Put(pair.first, pair.second);
+                    }
+                    else if (arg is IList && arg.GetType().IsGenericType)
+                    {
+                        // essentially, std::vector
+
+                        listItemIndex = 0;
+
+                        var list = (IList)arg;
+
+                        Put(
+                            list.Count
+                        );
+
+                        foreach (var obj in list)
+                        {
+                            Put(obj);
+                            listItemIndex++;
+                        }
+                    }
+                    else
+                    {
+                        // Attempt to fall back to an interface
+                        // Ignore any errors, we'll let the exception deal with that.
                         var name = arg.GetType().Name;
 
                         Log.Get().Trace("Looking for interface: {0}", name);
@@ -327,12 +326,12 @@ namespace GrandCheese.Util
                             throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().Name);
                         }
                     }
-                    catch
-                    {
-                        // Assume 
-                        throw new UnhandledSerializerTypeException("Unhandled serializer type " + arg.GetType().Name);
-                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Get().Error(ex, "Unable to serialize.");
+                throw ex;
             }
         }
     }

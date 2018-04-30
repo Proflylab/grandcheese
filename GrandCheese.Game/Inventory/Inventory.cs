@@ -12,46 +12,55 @@ namespace GrandCheese.Game.Inventory
         public static void WriteCreateSecondItems(Packet p)
         {
             p.Put(6); // items
+            
+            var item1 = new KItem()
+            {
+                ItemId = 380300,
+                ItemUniqueId = 10000001,
+                GradeId = (char)0x02,
 
-            p.Put(
-                380300, // ID
-                (long)10000001 // Item UID,
-                -1, // m_nDuration
-                -1, // m_nInitDuration
-                (byte)0x00, // m_cEnchantLevel
-                (byte)0x02, // m_cGradeID
-                0, // m_nEquipLevel
-                -1, // m_nPeriod
-                0, // m_tStartDate
-                0, // m_tRegDate
-                0 // m_tEndDate
-            );
-            /*
-            p.WriteHexString("00 00 00 00"); // Count
-            p.WriteHexString("01 FD 42 71"); // Item UID
-            p.WriteHexString("FF FF FF FF");
-            p.WriteHexString("FF FF FF FF");
-            p.WriteHexString("00");
-            p.WriteHexString("02");
-            p.WriteHexString("00 00 00 00");
-            p.WriteHexString("FF FF FF FF");
-            p.WriteHexString("00 00 00 00");
-            p.WriteHexString("00 00 00 00");
-            p.WriteHexString("00 00 00 00");
-            */
+                Sockets = new List<KSocketInfo>()
+                {
+                    new KSocketInfo()
+                    {
+                        SlotId = 0
+                    },
+                    new KSocketInfo()
+                    {
+                        SlotId = 1
+                    }
+                },
 
-            // vector<KSocketInfo>
-            p.Put(2); // Count
+                Attributes = new List<KAttributeInfo>()
+                {
+                    new KAttributeInfo()
+                    {
+                        SlotId = 0x00,
+                        Type = 0x0A,
+                        State = 0x01,
+                        Value = 0.14f
+                    },
+                    new KAttributeInfo()
+                    {
+                        SlotId = 0x01,
+                        Type = 0x03,
+                        State = 0x01,
+                        Value = 9.0f
+                    },
+                    new KAttributeInfo()
+                    {
+                        SlotId = 0x02,
+                        Type = 0x00,
+                        State = 0x01,
+                        Value = 5.0f
+                    },
+                }
+            };
 
-            p.WriteHexString("00 00 00 00"); // Card ID
-            p.WriteHexString("00"); // Slot index
-            p.WriteHexString("02"); // Type: Not assigned
-
-            p.WriteHexString("00 00 00 00"); // Card ID
-            p.WriteHexString("01"); // Slot index
-            p.WriteHexString("02"); // Type: Not assigned
+            p.Put(item1);
 
             // vector<KAttributeInfo>...?
+            /*
             p.Put(3);
             p.WriteHexString("00");
             p.WriteHexString("0A");
@@ -73,6 +82,8 @@ namespace GrandCheese.Game.Inventory
             p.WriteHexString("01 A1");
             p.WriteHexString("AB 5D 08 D7"); // Possibly user ID? [Character ID?]
             p.WriteHexString("50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
+            
+            */
 
             p.WriteHexString("00 05 CD 96 00 00 00 00 01 FD 42 72 FF FF FF FF FF FF FF FF 00 01 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 03 01 41 10 00 00 01 07 01 3F 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
             p.WriteHexString("00 05 CD A0 00 00 00 00 01 FD 42 74 FF FF FF FF FF FF FF FF 00 01 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 04 01 41 D8 00 00 01 03 01 41 10 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00");

@@ -11,11 +11,11 @@ namespace GrandCheese.Game.Inventory
 {
     class KAttributeInfo : ISerializable
     {
-        // todo: thishas to be added as a type
+        // todo: this has to be added as a type
         // just cast it to a byte in the serializer
-        public char SlotId { get; set; } = (char)0xFF;
-        public char Type { get; set; } = (char)0xFF;
-        public char State { get; set; } = (char)0x00;
+        public byte SlotId { get; set; } = 0xFF;
+        public byte Type { get; set; } = 0xFF;
+        public byte State { get; set; } = 0x00;
 
         // todo: add as type in serializer also
         public float Value { get; set; } = 0.0f;

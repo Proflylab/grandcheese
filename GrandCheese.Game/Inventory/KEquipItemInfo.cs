@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Game.Inventory
 {
-    class KEquipItem : ISerializable
+    class KEquipItemInfo : ISerializable
     {
         // for now, let's just hardcode things
         // public KItem item { get; set; }
 
         public long ItemUniqueId { get; set; }
 
-        public int ItemId { get; set; }
+        public uint ItemId { get; set; }
 
         public byte EnchantLevel { get; set; } = 0x00;
 
@@ -24,6 +24,8 @@ namespace GrandCheese.Game.Inventory
         public byte GradeId { get; set; } = 0x00;
 
         public int EquipLevel { get; set; } = 0x00;
+
+        public int DesignCoordiId { get; set; } = 0; // Does this go after the vectors?
 
         public List<KSocketInfo> Sockets { get; set; } = new List<KSocketInfo>();
 
@@ -38,6 +40,7 @@ namespace GrandCheese.Game.Inventory
                 GradeId,
                 EquipLevel,
                 EnchantEquipGradeId,
+                DesignCoordiId,
                 Sockets,
                 Attributes
             );

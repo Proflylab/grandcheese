@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using MoonSharp.Interpreter;
 
 namespace GrandCheese.Util
 {
@@ -27,6 +28,8 @@ namespace GrandCheese.Util
         public Action<ServerApp, Client, Packet, short> CustomInvoke = null;
         public Action<string> OnDisconnect = null;
         public Action<Client> CreateUserClient = null;
+
+        public bool initialized = false;
 
         public void PopulatePackets()
         {
@@ -83,6 +86,7 @@ namespace GrandCheese.Util
                 serverSocket.Listen(5);
                 serverSocket.BeginAccept(AcceptCallback, null);
                 logger.Info("Server has been started on port {0}.", port);
+                initialized = true;
             }
             catch (Exception ex)
             {
@@ -176,6 +180,8 @@ namespace GrandCheese.Util
                             var nextPacket = recBuf.Skip(readBytes).Take(packetSize).ToArray();
                             currentIteration++;
                             readBytes += packetSize;
+
+                            Log.Get().Trace("Raw packet: {0}", Util.ConvertBytesToHexString(nextPacket));
 
                             packets.Add(nextPacket);
                         }

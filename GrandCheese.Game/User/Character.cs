@@ -28,16 +28,16 @@ namespace GrandCheese.Game.User
         [Opcode(GameOpcodes.EVENT_NEW_CHAR_CHOICE_REQ)]
         public static void CreateNewCharacter(KUser user, Packet packet)
         {
-            var characterType = packet.ReadByte();
+            var characterType = (int)packet.ReadByte();
             Console.WriteLine("Character ID: {0}", characterType);
 
             var p = new Packet(GameOpcodes.EVENT_NEW_CHAR_CHOICE_ACK, user);
 
             p.Write(0x00); // m_ucOK
-            p.Put((int)characterType);
+            p.Put(characterType);
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 01");
 
-            Inventory.Inventory.WriteSiegTestEquipItems(p);
+            Inventory.Inventory.WriteSiegTestEquipItems(p, characterType);
 
             p.WriteHexString("00 00 00 02 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 2C 00 00 01 2C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
 
@@ -47,7 +47,7 @@ namespace GrandCheese.Game.User
             
             DungeonUserInfo.WriteMapDifficulty(p); // lol
 
-            Inventory.Inventory.WriteCreateSecondItems(p);
+            Inventory.Inventory.WriteCreateSecondItems(p, characterType);
 
             p.WriteHexString("00 00 00 00 00 00 00 02 00 00 00 14 00 00 00");
 
@@ -55,6 +55,8 @@ namespace GrandCheese.Game.User
 
             //p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 77 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
             p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
+
+            Log.Get().Trace(Util.Util.ConvertBytesToHexString(p.packet.ToArray()));
 
             user.userClient.Client.SendPacket(p);
         }

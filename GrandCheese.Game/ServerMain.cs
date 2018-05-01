@@ -10,12 +10,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using GrandCheese.Data;
+using MoonSharp.Interpreter;
 
 namespace GrandCheese.Game
 {
     class ServerMain
     {
         public static KServerInfo Info = null;
+
+        static string GetLuaInfo()
+        {
+            string versionString = Lua.script.DoString("return _VERSION").String;
+            string luaCompat = Lua.script.DoString("return _MOONSHARP.luacompat").String;
+
+            return $"{versionString} (Lua {luaCompat}-compatible)";
+        }
 
         static void Main(string[] args)
         {
@@ -26,11 +35,13 @@ namespace GrandCheese.Game
             Console.WriteLine("         Grand Cheese Season V / Game     ");
             Console.WriteLine("  ////////////////////////////////////////");
             Console.WriteLine();
+            
+            Lua.RunLuaScript("Config");
 
             using (var db = Database.Get())
             {
                 var server = db.Query<KServerInfo>("SELECT * FROM servers WHERE port = @port",
-                    new { port = 9401 }).FirstOrDefault();
+                    new { port = Lua.GetLuaGlobal("port").CastToNumber() }).FirstOrDefault();
 
                 if (server != null)
                 {
@@ -42,7 +53,7 @@ namespace GrandCheese.Game
             {
                 CreateUserClient = (Client c) =>
                 {
-                    c.User = (object)(new UserClient(c));
+                    c.User = new UserClient(c);
                 },
 
                 CustomInvoke = (ServerApp app, Client c, Packet p, short opcode) =>
@@ -94,8 +105,39 @@ namespace GrandCheese.Game
 
             serverApp.StartServer(Info.Port, "game");
 
-            // This won't work on Mono probably
-            while (true) Console.ReadLine();
+            Lua.RunLuaScript("CharDefaultInfo");
+
+            if (serverApp.initialized)
+            {
+                // Delay the loading of the shell just in case...
+                System.Threading.Thread.Sleep(2500);
+
+                // Start the Lua shell
+                Console.WriteLine();
+                Console.WriteLine(GetLuaInfo());
+                
+                //var script = new Script();
+
+                while (true)
+                {
+                    Console.Write("> ");
+                    var input = Console.ReadLine();
+
+                    if (input == "exit")
+                    {
+                        Environment.Exit(0);
+                    }
+
+                    try
+                    {
+                        Console.WriteLine(Lua.script.DoString(input).CastToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Get().Fatal(ex.Message);
+                    }
+                }
+            }
         }
     }
 }

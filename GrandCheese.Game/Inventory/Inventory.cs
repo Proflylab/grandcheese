@@ -4,15 +4,76 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GrandCheese.Util;
+using MoonSharp.Interpreter;
 
 namespace GrandCheese.Game.Inventory
 {
     public class Inventory
     {
-        public static void WriteCreateSecondItems(Packet p)
+        public static void WriteCreateSecondItems(Packet p, int charType)
         {
-            p.Put(6); // items
-            
+            //p.Put(6); // items
+            var items = new List<KItem>();
+
+            foreach (var charItem in Lua.GetLuaGlobal("CharDefaultEquipItemInfo").Table.Values)
+            {
+                var obj = charItem.Table;
+
+                if (Convert.ToInt32(obj["Char"]) == charType)
+                {
+                    var defaultItems = (Table)obj["DefaultItem"];
+
+                    // Lua starts with a 1 index...
+                    // retards
+                    var j = 0;
+                    for (var i = 1; i < defaultItems.Length + 1; i += 3)
+                    {
+                        var itemId = Convert.ToUInt32(defaultItems[i]);
+                        var duration = Convert.ToInt32(defaultItems[i + 1]);
+                        var period = Convert.ToInt32(defaultItems[i + 2]);
+
+                        Console.WriteLine($"{itemId} / {duration} / {period}");
+
+                        items.Add(new KItem()
+                        {
+                            ItemId = itemId,
+                            ItemUniqueId = 10000000 + j,
+                            GradeId = (char)0x02,
+
+                            Sockets = new List<KSocketInfo>()
+                            {
+                                new KSocketInfo()
+                                {
+                                    SlotId = 0
+                                },
+                                new KSocketInfo()
+                                {
+                                    SlotId = 1
+                                }
+                            },
+
+                            Attributes = new List<KAttributeInfo>()
+                            {
+                                new KAttributeInfo()
+                                {
+                                    SlotId = 0x00,
+                                    Type = 0xFF,
+                                    State = 0x01,
+                                    Value = 0.0f
+                                }
+                            }
+                        });
+                        j++;
+                    }
+
+                    break;
+                }
+            }
+
+            p.Put(items);
+            Log.Get().Debug("Giving {0} KItem objects to client", items.Count);
+
+            /*
             var item1 = new KItem()
             {
                 ItemId = 380300,
@@ -57,7 +118,7 @@ namespace GrandCheese.Game.Inventory
                 }
             };
 
-            p.Put(item1);
+            p.Put(item1);*/
 
             // vector<KAttributeInfo>...?
             /*
@@ -85,12 +146,14 @@ namespace GrandCheese.Game.Inventory
             
             */
 
+            /*
             p.WriteHexString("00 05 CD 96 00 00 00 00 01 FD 42 72 FF FF FF FF FF FF FF FF 00 01 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 03 01 41 10 00 00 01 07 01 3F 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
             p.WriteHexString("00 05 CD A0 00 00 00 00 01 FD 42 74 FF FF FF FF FF FF FF FF 00 01 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 04 01 41 D8 00 00 01 03 01 41 10 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
             p.WriteHexString("00 05 CD AA 00 00 00 00 01 FD 42 75 FF FF FF FF FF FF FF FF 00 01 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 02 01 41 00 00 00 01 03 01 41 10 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
 
             p.WriteHexString("00 05 CD B4 00 00 00 00 01 FD 42 76 FF FF FF FF FF FF FF FF 00 02 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 00 00 02 00 00 00 00 01 02 00 00 00 03 00 07 01 3F 00 00 00 01 01 01 41 00 00 00 02 09 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
             p.WriteHexString("00 06 53 1A 00 00 00 00 01 FD 42 77 FF FF FF FF FF FF FF FF 00 02 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 00 00 02 00 00 00 00 01 02 00 00 00 03 00 07 01 00 00 00 00 01 01 01 41 00 00 00 02 09 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
+            */
         }
 
         public static void WriteSiegTestItems_(Packet p)
@@ -98,8 +161,9 @@ namespace GrandCheese.Game.Inventory
             
         }
 
-        public static void WriteSiegTestEquipItems(Packet p)
+        public static void WriteSiegTestEquipItems(Packet p, int charType)
         {
+            /*
             p.Put(
                 6,
 
@@ -143,6 +207,43 @@ namespace GrandCheese.Game.Inventory
 
 
             p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+            */
+
+            var equipItems = new List<KEquipItemInfo>();
+
+            foreach (var charItem in Lua.GetLuaGlobal("CharDefaultEquipItemInfo").Table.Values)
+            {
+                var obj = charItem.Table;
+
+                if (Convert.ToInt32(obj["Char"]) == charType)
+                {
+                    var defaultItems = (Table)obj["DefaultItem"];
+                    
+                    // Lua starts with a 1 index...
+                    // retards
+
+                    var j = 0;
+                    for (var i = 1; i < defaultItems.Length + 1; i += 3)
+                    {
+                        var itemId = Convert.ToUInt32(defaultItems[i]);
+
+                        Console.WriteLine($"[EI] {itemId}");
+
+                        equipItems.Add(new KEquipItemInfo()
+                        {
+                            ItemId = itemId,
+                            ItemUniqueId = 1000000 + j
+                        });
+
+                        j++;
+                    }
+
+                    break;
+                }
+            }
+
+            p.Put(equipItems);
+            Log.Get().Debug("Gave {0} KEquipItemInfo objects to the client.", equipItems.Count);
         }
     }
 }

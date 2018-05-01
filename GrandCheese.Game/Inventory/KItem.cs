@@ -20,10 +20,10 @@ namespace GrandCheese.Game.Inventory
         public uint ItemId { get; set; }
 
         // todo: type?
-        public int Duration { get; set; } = -1;
+        public int Count { get; set; } = -1;
 
         // todo: type?
-        public int InitDuration { get; set; } = -1;
+        public int InitCount { get; set; } = -1;
 
         public char EnchantLevel { get; set; } = (char)0x00;
 
@@ -57,11 +57,12 @@ namespace GrandCheese.Game.Inventory
             packet.Put(
                 ItemId,
                 ItemUniqueId,
-                Duration,
-                InitDuration,
+                Count,
+                InitCount,
                 EnchantLevel,
                 GradeId,
                 EquipLevel,
+                // EquipLevelDown,
                 Period,
                 StartDate,
                 RegDate,

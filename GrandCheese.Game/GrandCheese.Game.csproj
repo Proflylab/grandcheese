@@ -36,6 +36,9 @@
     <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
     </Reference>
+    <Reference Include="MoonSharp.Interpreter, Version=2.0.0.0, Culture=neutral, PublicKeyToken=921e73ce94aa17f8, processorArchitecture=MSIL">
+      <HintPath>..\packages\MoonSharp.2.0.0.0\lib\net40-client\MoonSharp.Interpreter.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.5.3\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -62,13 +65,14 @@
   <ItemGroup>
     <Compile Include="Data\KSimpleDate.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="Lua.cs" />
     <Compile Include="Guild\GuildUserInfo.cs" />
     <Compile Include="Inventory\Inventory.cs" />
-    <Compile Include="Inventory\KEquipItem.cs" />
+    <Compile Include="Inventory\KEquipItemInfo.cs" />
     <Compile Include="Inventory\KItem.cs" />
     <Compile Include="Inventory\KAttributeInfo.cs" />
     <Compile Include="Inventory\KSocketInfo.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="ServerMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="User\Character.cs" />
     <Compile Include="User\DungeonUserInfo.cs" />
@@ -81,6 +85,9 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Script\CharDefaultInfo.lua">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>

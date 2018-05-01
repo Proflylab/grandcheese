@@ -163,7 +163,6 @@ namespace GrandCheese.Util
 
                 if (recBuf.Length > packetSize)
                 {
-                    var currentIteration = 0;
                     var readBytes = 0;
 
                     try
@@ -171,17 +170,16 @@ namespace GrandCheese.Util
                         // make sure this isn't going to be an infinite loop
                         for (int i = 0; i < 500; i++)
                         {
-                            if (packetSize * currentIteration >= recBuf.Length)
+                            if (readBytes + 1 >= recBuf.Length)
                             {
                                 break;
                             }
 
-                            packetSize = (short)((recBuf[packetSize * currentIteration + 1] << 8) + recBuf[packetSize * currentIteration]);
+                            packetSize = (short)((recBuf[readBytes + 1] << 8) + recBuf[readBytes]);
                             var nextPacket = recBuf.Skip(readBytes).Take(packetSize).ToArray();
-                            currentIteration++;
                             readBytes += packetSize;
 
-                            Log.Get().Trace("Raw packet: {0}", Util.ConvertBytesToHexString(nextPacket));
+                            //Log.Get().Trace("Raw packet: {0}", Util.ConvertBytesToHexString(nextPacket));
 
                             packets.Add(nextPacket);
                         }

@@ -56,7 +56,7 @@ namespace GrandCheese.Game.User
             //p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 77 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
             p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
 
-            Log.Get().Trace(Util.Util.ConvertBytesToHexString(p.packet.ToArray()));
+            //Log.Get().Trace(Util.Util.ConvertBytesToHexString(p.packet.ToArray()));
 
             user.userClient.Client.SendPacket(p);
         }

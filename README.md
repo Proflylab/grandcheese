@@ -12,4 +12,5 @@ This emulator uses PostgreSQL. Dapper and Npgsql are used to access the database
 
 ## Credits:
 * [lovemomory](https://github.com/lovemomory)
+* [Frihet](https://github.com/Frihet-Dev)
 * ...and other people.

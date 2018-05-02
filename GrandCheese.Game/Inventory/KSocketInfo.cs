@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Game.Inventory
 {
-    class KSocketInfo : ISerializable
+    public class KSocketInfo : ISerializable
     {
         // todo: uint needs to be added as a type in the serializer
         public uint CardItemId { get; set; } = 0;

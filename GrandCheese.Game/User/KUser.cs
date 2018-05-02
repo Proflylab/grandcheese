@@ -29,15 +29,22 @@ namespace GrandCheese.Game.User
         public int specialBonusPoints = 0;
         public int attendTime = 0;
         public int attendPoint = 0;
-        public List<Inventory.Inventory> items = new List<Inventory.Inventory>();
-
-        public Character currentCharacter = null;
+        //public List<KItem> items = new List<KItem>();
+        public Dictionary<int, Character> characters = new Dictionary<int, Character>();
+        public int currentCharacterId = 0;
 
         public UserClient userClient = null;
 
         public KUser(UserClient userClient)
         {
             this.userClient = userClient;
+        }
+        
+        public Character GetCurrentCharacter()
+        {
+            Trace.Assert(currentCharacterId != 0, "Current character ID was 0.");
+
+            return characters[currentCharacterId];
         }
 
         [Opcode(GameOpcodes.HEART_BIT_NOT)]

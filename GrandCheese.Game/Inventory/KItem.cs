@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 using GrandCheese.Data;
 using GrandCheese.Game.User;
 using GrandCheese.Util;
@@ -11,13 +13,19 @@ using GrandCheese.Util.Interfaces;
 
 namespace GrandCheese.Game.Inventory
 {
-    class KItem : ISerializable
+    public class KItem : ISerializable
     {
         // ItemUID / DB item ID
-        public long ItemUniqueId { get; set; }
+        public long Id { get; set; }
 
         // Item ID (for the game)
         public uint ItemId { get; set; }
+
+        // User ID
+        public int UserId { get; set; } = -1;
+
+        // Character ID
+        public int CharacterId { get; set; } = -1;
 
         // todo: type?
         public int Count { get; set; } = -1;
@@ -56,7 +64,7 @@ namespace GrandCheese.Game.Inventory
 
             packet.Put(
                 ItemId,
-                ItemUniqueId,
+                Id,
                 Count,
                 InitCount,
                 EnchantLevel,
@@ -83,6 +91,31 @@ namespace GrandCheese.Game.Inventory
 
             // idfk what this is but i'm not going to question it.
             packet.WriteHexString("50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
+        }
+
+        public void Insert(IDbConnection db)
+        {
+            var query = "INSERT INTO items (item_id, user_id, count, init_count, enchant_level, grade_id, equip_level, period, start_date, reg_date, end_date) " +
+                                    "VALUES(@ItemId, @UserId, @Count, @InitCount, @EnchantLevel, @GradeId, @EquipLevel, @Period, @StartDate, @RegDate, @EndDate) " +
+                                    "RETURNING id;";
+
+            var id = db.ExecuteScalar(query, new
+            {
+                ItemId,
+                UserId,
+                CharacterId,
+                Count,
+                InitCount,
+                EnchantLevel,
+                GradeId,
+                EquipLevel,
+                Period,
+                StartDate,
+                RegDate,
+                EndDate
+            });
+
+            Id = Convert.ToInt64(id);
         }
     }
 }

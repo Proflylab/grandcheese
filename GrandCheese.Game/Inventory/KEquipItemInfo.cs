@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Game.Inventory
 {
-    class KEquipItemInfo : ISerializable
+    public class KEquipItemInfo : ISerializable
     {
         // for now, let's just hardcode things
         // public KItem item { get; set; }

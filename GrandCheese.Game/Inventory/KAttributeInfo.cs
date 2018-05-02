@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace GrandCheese.Game.Inventory
 {
-    class KAttributeInfo : ISerializable
+    public class KAttributeInfo : ISerializable
     {
         // todo: this has to be added as a type
         // just cast it to a byte in the serializer

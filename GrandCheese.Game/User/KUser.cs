@@ -53,6 +53,41 @@ namespace GrandCheese.Game.User
             client.LastHeartbeat = DateTime.Now;
         }
 
+        public void GetCharacters()
+        {
+            characters = new Dictionary<int, Character>();
+
+            using (var db = Database.Get())
+            {
+                var chars = db.Query<Character>("SELECT * FROM \"characters\" WHERE user_id = @UserId;", new
+                {
+                    UserId = userId
+                }).ToList();
+
+                foreach(var chr in chars)
+                {
+                    var items = db.Query<KItem>("SELECT * FROM items WHERE character_id = @CharacterId;", new
+                    {
+                        CharacterId = chr.Id
+                    }).ToList();
+
+                    chr.Items = items;
+
+                    // TODO
+                    var equipItems = db.Query<KEquipItemInfo>("SELECT * FROM items WHERE character_id = @CharacterId;", new
+                    {
+                        CharacterId = chr.Id
+                    }).ToList();
+
+                    chr.EquipItems = equipItems;
+
+                    chr.KUser = this;
+
+                    characters.Add(chr.Id, chr);
+                }
+            }
+        }
+
         [Opcode((short)GameOpcodes.EVENT_VERIFY_ACCOUNT_REQ)]
         public void VerifyAccount(Client client, Packet packet)
         {
@@ -109,8 +144,10 @@ namespace GrandCheese.Game.User
             }
 
             Game.Send_ExpTable(this); // 04E1 (1249d)
+            
+            GetCharacters();
 
-            Packet pLogin = new Packet((short)GameOpcodes.EVENT_VERIFY_ACCOUNT_ACK);
+            Packet pLogin = new Packet(GameOpcodes.EVENT_VERIFY_ACCOUNT_ACK, this);
 
             pLogin.Put(
                 username.ToWideString(),
@@ -123,7 +160,7 @@ namespace GrandCheese.Game.User
             //pLogin.WriteHexString("00 2E 00 31 00 36 00 31 00 00");
             pLogin.WriteHexString("00 30 00 2E 00 2E 00 34 00 00");
 
-            pLogin.WriteIntLittle(BitConverter.ToInt32((client.Sock.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes(), 0));
+            pLogin.WriteInt(BitConverter.ToInt32((client.Sock.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes(), 0));
             
             GuildUserInfo.write_NoGuildUserInfoPacket(pLogin);
             //pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
@@ -137,86 +174,10 @@ namespace GrandCheese.Game.User
 
             // TODO: Characters
             //https://github.com/lovemomory/GrandChaseSeasonV/blob/master/GrandChaseSeasonV/src/game/user/GameUser.java#L189
-            pLogin.WriteInt(0);
+            pLogin.Put(characters.Values.ToList());
+            //pLogin.WriteHexString("00 00 00 05 00 00 00 00 00 00 00 00 00 00 00 00 0C 1A C6 8E 00 00 00 01 00 00 00 03 00 00 00 01 00 00 00 03 00 00 00 00 0C 1A C6 8E 00 00 00 55 00 00 00 06 00 05 CB AC 00 00 00 00 00 96 BB 49 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CB B6 00 00 00 00 00 96 BB 4A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CB C0 00 00 00 00 00 96 BB 4B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CB CA 00 00 00 00 00 96 BB 4C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CB D4 00 00 00 00 00 96 BB 4D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 52 CA 00 00 00 00 00 96 BB 4E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A0 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 01 00 00 00 03 00 00 00 03 00 00 06 7C 00 00 06 7C 00 00 00 00 00 00 00 04 00 00 00 04 00 00 00 00 00 00 00 93 00 00 00 00 07 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 2B 29 01 01 00 00 00 00 00 00 00 00 00 00 0C 1A C6 8E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0C 1A C6 8E 00 00 00 55 00 00 00 06 00 05 CB E8 00 00 00 00 00 9E 47 8F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CB F2 00 00 00 00 00 9E 47 90 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CB FC 00 00 00 00 00 9E 47 91 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CC 06 00 00 00 00 00 9E 47 92 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CC 10 00 00 00 00 00 9E 47 93 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 52 D4 00 00 00 00 00 9E 47 94 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A0 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 B5 00 00 00 00 00 00 00 B5 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 3B 00 00 07 3B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 08 0E 00 00 08 0E 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 2B 29 02 02 00 00 00 00 00 00 00 00 00 00 0C 1A C6 8E 00 00 00 00 00 00 00 02 00 00 00 00 00 00 00 02 00 00 00 00 0C 1A C6 8E 00 00 00 55 00 00 00 06 00 05 CC 24 00 00 00 00 00 96 BA 61 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CC 2E 00 00 00 00 00 96 BA 62 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CC 38 00 00 00 00 00 96 BA 63 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CC 42 00 00 00 00 00 96 BA 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 05 CC 4C 00 00 00 00 00 96 BA 65 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 52 DE 00 00 00 00 00 96 BA 66 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A0 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 02 00 00 06 0F 00 00 06 0F 00 00 00 00 00 00 00 02 00 00 00 02 00 00 00 00 00 00 01 2C 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 2B 29 06 06 00 00 00 00 00 00 00 00 00 00 00 30 13 56 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 01 00 00 00 00 00 30 13 56 00 00 00 37 00 00 00 06 00 05 CD 14 00 00 00 00 00 9E 48 68 00 01 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 00 01 40 A0 00 00 01 01 01 41 00 00 00 00 05 CD 1E 00 00 00 00 00 9E 48 69 00 01 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 09 01 00 00 00 00 01 02 01 41 00 00 00 00 05 CD 28 00 00 00 00 00 9E 48 6A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 0C 01 3D 23 6E 2F 01 03 01 41 10 00 00 00 05 CD 32 00 00 00 00 00 9E 48 6B 00 01 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 03 01 41 10 00 00 01 08 01 3D A3 A2 9C 00 05 CD 3C 00 00 00 00 00 9E 48 6C 00 01 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 07 01 3F 00 00 00 01 08 01 3D A3 A2 9C 00 06 53 06 00 00 00 00 00 9E 48 6D 00 01 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 1C 01 3E 9E B8 52 01 01 01 41 00 00 00 00 00 00 6E 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 01 00 00 03 20 00 00 03 20 00 00 00 00 00 00 00 01 00 00 00 01 00 00 00 00 00 00 01 2C 00 00 00 00 07 00 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 2B 29 11 11 00 00 00 00 00 00 00 00 00 00 0C 1A C6 8E 00 00 00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 00 00 00 0C 1A C6 8E 00 00 00 55 00 00 00 00 00 00 00 A0 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 00 07 68 00 00 07 68 00 00 00 00 00 00 00 02 00 00 00 02 00 00 00 00 00 00 00 D2 00 00 00 00 07 00 00 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 2B 29");
 
-            /*
-            pLogin.WriteInt(1); // OK
-
-            pLogin.Write(19); // Index of character
-            pLogin.Write(19); // m_cCharType
-            pLogin.WriteUnicodeString("", true); // m_strCharName
-            pLogin.Write(0); // m_cPromotion
-            pLogin.Write(0); // m_cCurrentPromotion
-            pLogin.WriteLong(0); // m_biInitExp
-            pLogin.WriteInt(0); // m_iInitWin
-            pLogin.WriteInt(0); // m_iInitLose
-            pLogin.WriteInt(0); // m_iWin
-            pLogin.WriteInt(0); // m_iLose
-            pLogin.WriteLong(0); // m_biExp
-            pLogin.WriteInt(1); // m_dwLevel
-
-            pLogin.WriteInt(0); // m_vecEquipItems.size()
-
-            pLogin.WriteInt(1); // SkillPoint
-            pLogin.WriteInt(0); // MaxSkillPoint
-
-            pLogin.WriteInt(1); // SkillTreePoint
-            pLogin.WriteInt(0); // MaxSkillTreePoint
-
-            pLogin.Write(0); // 오류나면 바이트 말고 인트로..
-
-            pLogin.WriteLong(100); // m_biInitTotalExp
-            pLogin.WriteLong(100); // m_biTotalExp
-
-            // EquipItemInfo
-            pLogin.WriteInt(0);
-
-            // TODO: What are these?
-            /*
-            pLogin.WriteInt(item.Id);
-            pLogin.WriteInt(1); // Count?
-            pLogin.WriteInt(item.ItemId);
-            //pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
-            pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
-            pLogin.WriteInt(0);
-            pLogin.WriteInt(0);
-            pLogin.WriteInt(0);
-            pLogin.WriteInt(0);
-
-            pLogin.WriteShort(0);
-
-            pLogin.Write(0);
-            */
-
-            /*
-            pLogin.WriteBool(false); // m_bChangeWeaponLock
-
-            // Promotion (Vector)
-            pLogin.WriteInt(0); // Size
-            //pLogin.Write(1); // Promotion
-
-            // ELOUserData
-            pLogin.WriteInt(0); // m_nInitELOWin
-            pLogin.WriteInt(0); // m_nELOWin
-            pLogin.WriteInt(0); // m_nInitELOLose
-            pLogin.WriteInt(0); // m_nELOLose
-            pLogin.WriteInt(1660); // m_nRatingPoint
-            pLogin.WriteInt(1660); // m_nInitRatingPoint
-            pLogin.WriteInt(0); // m_nELOType
-            pLogin.WriteInt(0); // m_nInitMatchTotalCount
-            pLogin.WriteInt(0); // m_nMatchTotalCount
-            pLogin.WriteInt(0); // m_nLastWinLose
-            pLogin.WriteInt(0); // m_nConstantK
-            pLogin.Write(0); // m_ucGrade
-            pLogin.WriteInt(0); // m_nPlacementTestPlayCount
-            
-            // New in Season 5:
-            pLogin.WriteInt(0); // Character slot position
-            pLogin.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 30 29");
-            */
-            /////////////////////
-
-            pLogin.WriteShort(9401); // 포트긴 한데 udp겠지..? 9401 in Madness
+            pLogin.WriteShort(9401); // UDP echo server port (relay server?)
             pLogin.WriteInt(userId);
             pLogin.WriteUnicodeString(ServerMain.Info.Name, true);
 

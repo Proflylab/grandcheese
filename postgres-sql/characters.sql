@@ -1,5 +1,5 @@
 CREATE TABLE public."characters" (
-    "id" int8 NOT NULL,
+    "id" serial8 NOT NULL,
     "user_id" int4,
     "character_type" int4,
     "promotion" int4 DEFAULT 0,

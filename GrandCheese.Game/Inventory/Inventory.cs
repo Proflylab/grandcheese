@@ -29,21 +29,21 @@ namespace GrandCheese.Game.Inventory
                     var j = 0;
                     for (var i = 1; i < defaultItems.Length + 1; i += 3)
                     {
-                        var itemId = Convert.ToUInt32(defaultItems[i]);
+                        var itemId = Convert.ToInt32(defaultItems[i]);
                         var duration = Convert.ToInt32(defaultItems[i + 1]);
                         var period = Convert.ToInt32(defaultItems[i + 2]);
 
                         Console.WriteLine($"{itemId} / {duration} / {period}");
 
-                        items.Add(new KItem()
+                        var item = new KItem()
                         {
                             ItemId = itemId,
                             Id = 10000000 + j,
-                            GradeId = (char)0x02,
+                            GradeId = 0x02,
 
                             UserId = kUser.userId,
                             CharacterId = kUser.GetCurrentCharacter().Id,
-                            
+
                             Sockets = new List<KSocketInfo>()
                             {
                                 new KSocketInfo()
@@ -66,7 +66,14 @@ namespace GrandCheese.Game.Inventory
                                     Value = 0.0f
                                 }
                             }
-                        });
+                        };
+
+                        using (var db = Database.Get())
+                        {
+                            item.Insert(db, true);
+                        }
+
+                        items.Add(item);
 
                         j++;
                     }
@@ -76,6 +83,9 @@ namespace GrandCheese.Game.Inventory
             }
 
             p.Put(items);
+
+            kUser.characters[kUser.currentCharacterId].Items = items;
+
             Log.Get().Debug("Giving {0} KItem objects to client", items.Count);
         }
 
@@ -84,7 +94,7 @@ namespace GrandCheese.Game.Inventory
             
         }
 
-        public static void WriteDefaultEquipItemInfo(Packet p, int charType)
+        public static void WriteDefaultEquipItemInfo(Packet p, int charType, KUser kUser)
         {
             var equipItems = new List<KEquipItemInfo>();
 
@@ -102,7 +112,7 @@ namespace GrandCheese.Game.Inventory
                     var j = 0;
                     for (var i = 1; i < defaultItems.Length + 1; i += 3)
                     {
-                        var itemId = Convert.ToUInt32(defaultItems[i]);
+                        var itemId = Convert.ToInt32(defaultItems[i]);
 
                         Console.WriteLine($"[EI] {itemId}");
 
@@ -120,6 +130,7 @@ namespace GrandCheese.Game.Inventory
             }
 
             p.Put(equipItems);
+            kUser.characters[kUser.currentCharacterId].EquipItems = equipItems;
             Log.Get().Debug("Gave {0} KEquipItemInfo objects to the client.", equipItems.Count);
         }
     }

@@ -19,7 +19,7 @@ namespace GrandCheese.Game.Inventory
         public long Id { get; set; }
 
         // Item ID (for the game)
-        public uint ItemId { get; set; }
+        public int ItemId { get; set; }
 
         // User ID
         public int UserId { get; set; } = -1;
@@ -33,9 +33,9 @@ namespace GrandCheese.Game.Inventory
         // todo: type?
         public int InitCount { get; set; } = -1;
 
-        public char EnchantLevel { get; set; } = (char)0x00;
+        public byte EnchantLevel { get; set; } = 0x00;
 
-        public char GradeId { get; set; } = (char)0x00;
+        public byte GradeId { get; set; } = 0x00;
 
         public int EquipLevel { get; set; } = 0;
 
@@ -67,8 +67,8 @@ namespace GrandCheese.Game.Inventory
                 Id,
                 Count,
                 InitCount,
-                EnchantLevel,
-                GradeId,
+                (int)EnchantLevel,
+                (int)GradeId,
                 EquipLevel,
                 // EquipLevelDown,
                 Period,
@@ -93,10 +93,10 @@ namespace GrandCheese.Game.Inventory
             packet.WriteHexString("50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
         }
 
-        public void Insert(IDbConnection db)
+        public void Insert(IDbConnection db, bool Equipped)
         {
-            var query = "INSERT INTO items (item_id, user_id, count, init_count, enchant_level, grade_id, equip_level, period, start_date, reg_date, end_date) " +
-                                    "VALUES(@ItemId, @UserId, @Count, @InitCount, @EnchantLevel, @GradeId, @EquipLevel, @Period, @StartDate, @RegDate, @EndDate) " +
+            var query = "INSERT INTO items (item_id, user_id, character_id, count, init_count, enchant_level, grade_id, equip_level, period, start_date, reg_date, end_date, equip_state) " +
+                                    "VALUES(@ItemId, @UserId, @CharacterId, @Count, @InitCount, @EnchantLevel, @GradeId, @EquipLevel, @Period, @StartDate, @RegDate, @EndDate, @Equipped) " +
                                     "RETURNING id;";
 
             var id = db.ExecuteScalar(query, new
@@ -112,7 +112,8 @@ namespace GrandCheese.Game.Inventory
                 Period,
                 StartDate,
                 RegDate,
-                EndDate
+                EndDate,
+                Equipped
             });
 
             Id = Convert.ToInt64(id);

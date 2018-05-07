@@ -15,7 +15,7 @@ namespace GrandCheese.Game.Inventory
 
         public long ItemUniqueId { get; set; }
 
-        public uint ItemId { get; set; }
+        public int ItemId { get; set; }
 
         public byte EnchantLevel { get; set; } = 0x00;
 
@@ -36,11 +36,11 @@ namespace GrandCheese.Game.Inventory
             packet.Put(
                 ItemId,
                 ItemUniqueId,
-                EnchantLevel,
-                GradeId,
-                EquipLevel,
-                EnchantEquipGradeId,
-                DesignCoordiId,
+                EnchantLevel, //byte
+                GradeId, // byte
+                EquipLevel, // int
+                EnchantEquipGradeId, // byte
+                DesignCoordiId, // int
                 Sockets,
                 Attributes
             );

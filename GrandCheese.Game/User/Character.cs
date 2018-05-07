@@ -38,14 +38,17 @@ namespace GrandCheese.Game.User
 
         public void Serialize(Packet packet, int i, params object[] optional)
         {
+            Log.Get().Debug("[Serializing] Character Type: {0}", CharacterType);
+
             packet.Put(
-                (byte)CharacterType,
-                KUser.nick?.ToWideString(),
+                (byte)CharacterType, // ?
+                (byte)i, // ???
                 (byte)Promotion,
                 (byte)CurrentPromotion,
-                Exp, // InitExp
-                Win, // InitWin
-                Lose, // InitLose
+                0, // 1 //KUser.nick?.ToWideString(),
+                Exp,
+                Win,
+                Lose,
                 Win,
                 Lose,
                 Exp,
@@ -53,17 +56,18 @@ namespace GrandCheese.Game.User
                 EquipItems,
 
                 // TODO
-                10, // SkillPoint
-                0, // 100, // MaxSkillTreePoint
+                160, // 10 // SkillPoint
+                160, // 0 // 100, // MaxSkillTreePoint
+
+                1, // SkillTreePoint
+                0, // MaxSkillTreePoint
 
                 (byte)0, // ?
 
                 (long)100, // m_biInitTotalExp
                 (long)100, // m_biTotalExp
-
-                // TODO: look into this
-                // m_kChangeWeaponItem.write_EquipItemInfoPacket(p);
-                0,
+                
+                new KEquipItemInfo(), // for changeWeapon, TODO
                 UseWeapon,
 
                 // TODO
@@ -72,14 +76,19 @@ namespace GrandCheese.Game.User
 
                 // TODO
                 // kELOUserData
-                // idk what to do with this yet
-                new KELOUserData(),
-
-                // New in Season 5
-                CharacterType // as int
+                new KELOUserData()
+                {
+                    ELOWin = Win,
+                    ELOLose = Lose
+                },
+                
+                CharacterType //6 as int
             );
 
-            packet.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 00 71 30 29");
+            packet.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00");
+
+            // Character ID?
+            packet.WriteHexString("00 71 30 29");
         }
 
         public void Insert(IDbConnection db)
@@ -148,7 +157,7 @@ namespace GrandCheese.Game.User
             
             DungeonUserInfo.WriteMapDifficulty(p); // lol
 
-            Inventory.Inventory.WriteDefaultEquipItemInfo(p, characterType);
+            Inventory.Inventory.WriteDefaultEquipItemInfo(p, characterType, kUser);
 
             p.WriteHexString("00 00 00 00 00 00 00 02 00 00 00 14 00 00 00");
 

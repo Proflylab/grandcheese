@@ -1,6 +1,7 @@
 CREATE TABLE public.items (
 	"id" int8 NOT NULL,
-	"item_id" int4,
+	"user_id" int4 NOT NULL,
+	"character_id" int4 NOT NULL,
 	"count" int4 DEFAULT -1,
 	"init_count" int4 DEFAULT -1,
 	"enchant_level" int4 DEFAULT 0,

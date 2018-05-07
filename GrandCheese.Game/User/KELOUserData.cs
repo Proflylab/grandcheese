@@ -14,14 +14,14 @@ namespace GrandCheese.Game.User
         const int MT_NORMAL = 1; // General (일반)
         const int MT_MAX = 2; // Undocumented
         
-        public int InitELOWin { get; set; } = 0;
+        //public int InitELOWin { get; set; } = 0;
         public int ELOWin { get; set; } = 0;
-        public int InitELOLose { get; set; } = 0;
+        //public int InitELOLose { get; set; } = 0;
         public int ELOLose { get; set; } = 0;
         public int RatingPoint { get; set; } = 0;
         public int InitRatingPoint { get; set; } = 0;
         public int ELOType { get; set; } = MT_NORMAL;
-        public int InitMatchTotalCount { get; set; } = 0;
+        //public int InitMatchTotalCount { get; set; } = 0;
         public int MatchTotalCount { get; set; } = 0;
         public int LastWinLose { get; set; } = 0; // 0 = Lose, 1 = Win
         public int ConstantK { get; set; } = 0; // Constant K for placement tests
@@ -31,18 +31,18 @@ namespace GrandCheese.Game.User
         public void Serialize(Packet packet, int i, params object[] optional)
         {
             packet.Put(
-                InitELOWin,
                 ELOWin,
-                InitELOLose,
+                ELOWin,
+                ELOLose,
                 ELOLose,
                 1660, // m_nRatingPoint
                 1660, // m_nInitRatingPoint
                 ELOType,
-                InitMatchTotalCount,
+                MatchTotalCount,
                 MatchTotalCount,
                 LastWinLose,
                 ConstantK,
-                Grade,
+                Grade, // byte
                 7
             );
         }

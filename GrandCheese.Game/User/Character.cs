@@ -38,11 +38,11 @@ namespace GrandCheese.Game.User
 
         public void Serialize(Packet packet, int i, params object[] optional)
         {
-            Log.Get().Debug("[Serializing] Character Type: {0}", CharacterType);
+            Log.Get().Debug("[Serializing] Character Type: {0} with index {1}", CharacterType, i);
 
             packet.Put(
+                (byte)i, // Index
                 (byte)CharacterType, // ?
-                (byte)i, // ???
                 (byte)Promotion,
                 (byte)CurrentPromotion,
                 0, // 1 //KUser.nick?.ToWideString(),
@@ -81,13 +81,13 @@ namespace GrandCheese.Game.User
                     ELOWin = Win,
                     ELOLose = Lose
                 },
-                
-                CharacterType //6 as int
+
+                i // Character Slot Position //6 as int
             );
 
             packet.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00");
 
-            // Character ID?
+            // User ID?
             packet.WriteHexString("00 71 30 29");
         }
 
@@ -145,26 +145,23 @@ namespace GrandCheese.Game.User
 
             p.Write(0x00); // m_ucOK
             p.Put(characterType);
-            p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 01");
-
-            Inventory.Inventory.GiveDefaultItems(p, characterType, kUser);
-
-            p.WriteHexString("00 00 00 02 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 2C 00 00 01 2C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
-
-            p.WriteInt(7); // ??????
+            p.WriteHexString("64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 01");
             
-            p.WriteHexString("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 FF EA 7D A8 00 00 00 55");
+            Inventory.Inventory.WriteDefaultEquipItemInfo(p, characterType, kUser);
+
+            p.WriteHexString("00 00 00 02 00 00 00 A0 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 2C 00 00 01 2C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 00 07 D0 00 00 07 D0 00 00 00 0A 00 00 00 00 00 00 00 5A 00 00 00 64 00 00 00 00 00 00 00 00 FF EA 7D A8 00 00 00 55");
             
             DungeonUserInfo.WriteMapDifficulty(p); // lol
-
-            Inventory.Inventory.WriteDefaultEquipItemInfo(p, characterType, kUser);
+            
+            Inventory.Inventory.GiveDefaultItems(p, characterType, kUser);
 
             p.WriteHexString("00 00 00 00 00 00 00 02 00 00 00 14 00 00 00");
 
             WriteEnabledCharacters(p);
+            
+            p.Write(255);
 
-            //p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 77 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
-            p.WriteHexString("00 00 00 03 00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
+            p.WriteHexString("00 00 00 01 00 00 E5 6A 00 00 00 00 02 06 CC BA 00 00 00 14 00 00 00 14 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 08 D7 50 D0 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 E5 6A 00 00 00 00 02 06 CC BA 06 00 00 00 00 00 00 00");
 
             //Log.Get().Trace(Util.Util.ConvertBytesToHexString(p.packet.ToArray()));
 

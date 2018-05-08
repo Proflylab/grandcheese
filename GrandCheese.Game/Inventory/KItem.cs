@@ -26,11 +26,9 @@ namespace GrandCheese.Game.Inventory
 
         // Character ID
         public int CharacterId { get; set; } = -1;
-
-        // todo: type?
+        
         public int Count { get; set; } = -1;
-
-        // todo: type?
+        
         public int InitCount { get; set; } = -1;
 
         public byte EnchantLevel { get; set; } = 0x00;
@@ -39,16 +37,14 @@ namespace GrandCheese.Game.Inventory
 
         public int EquipLevel { get; set; } = 0;
 
-        // todo: type?
+        public int EquipLevelDown { get; set; } = 0;
+
         public int Period { get; set; } = -1;
-
-        // todo: type?
+        
         public int StartDate { get; set; } = 0;
-
-        // todo: type?
+        
         public int RegDate { get; set; } = 0;
-
-        // todo: type?
+        
         public int EndDate { get; set; } = 0;
 
         public List<KSocketInfo> Sockets { get; set; } = new List<KSocketInfo>();
@@ -67,15 +63,22 @@ namespace GrandCheese.Game.Inventory
                 Id,
                 Count,
                 InitCount,
-                (int)EnchantLevel,
-                (int)GradeId,
-                EquipLevel,
-                // EquipLevelDown,
+
+                EnchantLevel,
+                GradeId,
+
+                (short)EquipLevel,
+                (short)EquipLevelDown,
+
                 Period,
                 StartDate,
                 RegDate,
-                EndDate,
-                
+                EndDate
+            );
+            /*
+                0x00, // ItemType
+
+
                 // let the serializer deal with the lists
                 Sockets,
                 Attributes
@@ -90,7 +93,9 @@ namespace GrandCheese.Game.Inventory
             //packet.Put(kUser.currentCharacter.Id); // ?
 
             // idfk what this is but i'm not going to question it.
-            packet.WriteHexString("50 D0 00 00 08 00 00 00 00 00 00 00 00 00");
+            packet.WriteHexString("50 D0 00 00 08 00 00 00 00 00 00 00 00 00");*/
+
+            packet.WriteHexString("00 00 00 01 00 00 00 00 00 02 00 00 00 02 00 07 01 3F 00 00 00 01 08 01 3D A3 D7 0A 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 01 A1 AB 5D 07 C6 50 D0 00 00 07 00 00 00 00 00 00 00 00 00");
         }
 
         public void Insert(IDbConnection db, bool Equipped)
@@ -106,9 +111,9 @@ namespace GrandCheese.Game.Inventory
                 CharacterId,
                 Count,
                 InitCount,
-                EnchantLevel,
-                GradeId,
-                EquipLevel,
+                EnchantLevel, // byte
+                GradeId, // byte
+                EquipLevel, // int
                 Period,
                 StartDate,
                 RegDate,

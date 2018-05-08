@@ -88,12 +88,7 @@ namespace GrandCheese.Game.Inventory
 
             Log.Get().Debug("Giving {0} KItem objects to client", items.Count);
         }
-
-        public static void WriteSiegTestItems_(Packet p)
-        {
-            
-        }
-
+        
         public static void WriteDefaultEquipItemInfo(Packet p, int charType, KUser kUser)
         {
             var equipItems = new List<KEquipItemInfo>();

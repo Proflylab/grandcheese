@@ -72,9 +72,8 @@ namespace GrandCheese.Game.User
                     }).ToList();
 
                     chr.Items = items;
-
-                    // TODO
-                    var equipItems = db.Query<KEquipItemInfo>("SELECT * FROM items WHERE character_id = @CharacterId;", new
+                    
+                    var equipItems = db.Query<KEquipItemInfo>("SELECT * FROM items WHERE character_id = @CharacterId AND equip_state = true;", new
                     {
                         CharacterId = chr.Id
                     }).ToList();
